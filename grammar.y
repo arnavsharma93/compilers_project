@@ -2,7 +2,6 @@
 	#define YYSTYPE float
 	#include<stdio.h>
 	#include<math.h>
-	
 %}
 
 %token NUM
@@ -12,6 +11,7 @@
 %token DIVIDE
 %token POW
 %token LINEBREAK
+%token WORD
 
 %%
 
