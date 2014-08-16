@@ -3,5 +3,7 @@ class    Program
     int _a123asd_asda, dsa , asdfad;
     int _a123asd_asda, dsa , asdfad;
     int _a123asd_asda, dsa , asdfad;
-
-    }
+    int main(int foo, int bar)
+    int main_bool(boolean foo, boolean bar)
+    void main_void()
+}

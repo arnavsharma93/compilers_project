@@ -22,6 +22,8 @@ alpha_num  {alpha}|{digit}
 "]"  {return CLOSESQ;}
 "{"  {return OPENBLOCK;}
 "}"  {return CLOSEBLOCK;}
+"("  {return OPENROUND;}
+")"  {return CLOSEROUND;}
 ","  {return COMMA;}
 
 "class"     {return CLASS;}
