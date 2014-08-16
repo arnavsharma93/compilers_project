@@ -12,23 +12,25 @@ void yyerror (char const *s) {
 %}
 
 digit	[0-9]
-alpha	[a-zA-Z]
+alpha	[a-zA-Z_]
 delim   [ \t\n]
+alpha_num  {alpha}|{digit}
 
 %%
+";" {return SEMICOLON;}
+"["  {return OPENSQ;}
+"]"  {return CLOSESQ;}
+"{"  {return OPENBLOCK;}
+"}"  {return CLOSEBLOCK;}
+
 "class"     {return CLASS;}
 "Program"   {return PROGRAM;}
 "void"      {return VOID;}
+
 "int"|"boolean" {return TYPE;}
-"{"         {return OPENBLOCK;}
-"}"         {return CLOSEBLOCK;}
+{alpha}{alpha_num}*  {return ID;}
 
 {delim}+    {}
-
-{digit}+    {
-                yylval = (float)atoi( yytext );
-				return NUM;
-            }
 
 %%
 
