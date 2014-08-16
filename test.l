@@ -22,6 +22,7 @@ alpha_num  {alpha}|{digit}
 "]"  {return CLOSESQ;}
 "{"  {return OPENBLOCK;}
 "}"  {return CLOSEBLOCK;}
+","  {return COMMA;}
 
 "class"     {return CLASS;}
 "Program"   {return PROGRAM;}

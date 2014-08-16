@@ -1,4 +1,7 @@
 class    Program
 {
-    _a123asd_asda
+    int _a123asd_asda, dsa , asdfad;
+    int _a123asd_asda, dsa , asdfad;
+    int _a123asd_asda, dsa , asdfad;
+
     }
