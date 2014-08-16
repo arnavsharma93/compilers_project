@@ -1,11 +1,45 @@
 class    Program
 {
-    int _a123asd_asda, a, b, v;
+    int _a123asd_asda, a, b[232], v;
     
-    void main(int asf, int ds)
-    void main(int asf, int ds)
-    void main(int asf, int ds)
+    void main(int asf, int ds){}
+    void main(int asf, int ds){}
+    void main(int asf, int ds){}
     int main(int asf, int ds)
+    {}
     int main()
+    {
+    	int ad, asdf, sadf;
+    	int ad, asdf, sadf;
+    	int ad, asdf, sadf;
+
+    	dsf = dsf;
+    	ads = dfasd;
+    	daf[asd] =sdaf;
+
+    	asdf();
+
+    	asfd(a, b, c);
+
+    	if(a)
+    	{
+    		int a;
+    	}
+
+    	if(a)
+    	{
+    		int a;
+    	}
+    	else
+    	{
+    		int ads;
+    	}
+
+    	break;
+
+    	return;
+
+    	return a;
+    }
     
 }
