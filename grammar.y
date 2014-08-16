@@ -20,10 +20,27 @@
 %token PLUSEQUAL
 %token MINUSEQUAL
 %token BOOL_LITERAL
-%token ARITH_OP
+%token LESSEQUAL
+%token GTEQUAL
+%token EQEQUAL
+%token NOTEQUAL
+%token COND_AND
+%token COND_OR
+%token CHAR_LITERAL
+%token STRING_LITERAL
+%token CALLOUT
 
 %nonassoc "empty"
 %nonassoc TYPE
+
+%left COND_OR
+%left COND_AND
+%left EQEQUAL NOTEQUAL
+%left '<' LESSEQUAL GTEQUAL '>'
+%left '+' '-'
+%left '*' '/' '%'
+%nonassoc "not"
+%nonassoc "negate"
 %%
 
 /* COMPLETED */
@@ -75,20 +92,41 @@ assign_op: '='
 expr: location
     | method_call
     | literal
-    /*| expr bin_op expr */
-    | '-' expr
-    | '!' expr
     | '(' expr ')'
+    | '!' expr %prec "not"
+    | '-' expr %prec "negate"
+    | expr '*' expr | expr '/' expr | expr '%' expr 
+    | expr '+' expr | expr '-' expr
+    | expr '<' expr | expr LESSEQUAL expr | expr GTEQUAL expr | expr '>' expr
+    | expr EQEQUAL expr | expr NOTEQUAL expr
+    | expr COND_AND expr | expr COND_OR expr
 
 comma_expr: /* empty string */ 
           | ',' expr comma_expr
 
 method_call: ID '(' ')'
-           | ID '(' expr comma_expr ')'
+          | ID '(' expr comma_expr ')'
+          | CALLOUT '(' STRING_LITERAL ')'
+          | CALLOUT '(' STRING_LITERAL ',' callout_arg comma_callout_arg ')'
+
+callout_arg: expr | STRING_LITERAL;
+
+comma_callout_arg: /* empty string */ 
+                 | ',' callout_arg comma_callout_arg
+                 ;
 
 literal: INT_LITERAL
-       /*| CHAR_LITERAL*/
+       | CHAR_LITERAL
        | BOOL_LITERAL
+
+
+/*
+bin_op: arith_op | rel_op | eq_op | cond_op;
+arith_op: '+' | '-' | '*' | '/' | '%';
+rel_op: '<' | '>' | LESSEQUAL | GTEQUAL;
+eq_op: NOTEQUAL | EQEQUAL;
+cond_op: COND_OP;
+*/
 
 field_decl_star: /* empty string */ %prec "empty"
                | field_decl field_decl_star

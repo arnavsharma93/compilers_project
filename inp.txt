@@ -17,7 +17,26 @@ class    Program
     	ads += dfasd;
     	daf[asd] -=sdaf;
 
+    	test = 1 + 2 - 3 * 3 / 5 %4;
+
     	asdf();
+    	callout("dsafd");
+
+    	for a = 1, 10
+    	{
+    		print(a);
+    		for b = 2, 10000
+    		{
+    			if(b==2)
+    			{
+    				print(b);
+    			}
+    			else
+    			{
+    				print(a);
+    			}
+    		}
+    	}
 
     	asfd(a, b, c);
 
