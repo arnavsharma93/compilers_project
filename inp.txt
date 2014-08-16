@@ -14,8 +14,8 @@ class    Program
     	int ad, asdf, sadf;
 
     	dsf = dsf;
-    	ads = dfasd;
-    	daf[asd] =sdaf;
+    	ads += dfasd;
+    	daf[asd] -=sdaf;
 
     	asdf();
 
@@ -40,6 +40,18 @@ class    Program
     	return;
 
     	return a;
+
+    	continue;
+
+    	{
+    		int adf;
+    		adf = 12;
+    		a = -asdf(a, d);
+    		a = !asdf(a, d);
+    		
+    		a = (asdf(a, d));
+
+    	}
     }
     
 }

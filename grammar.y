@@ -16,6 +16,11 @@
 %token FOR
 %token RETURN
 %token BREAK
+%token CONTINUE
+%token PLUSEQUAL
+%token MINUSEQUAL
+%token BOOL_LITERAL
+%token ARITH_OP
 
 %nonassoc "empty"
 %nonassoc TYPE
@@ -57,20 +62,33 @@ statement: location assign_op expr ';'
          | RETURN ';'
          | RETURN expr ';'
          | BREAK ';'
+         | CONTINUE ';'
+         | block
 
 location: ID
         | ID '[' expr ']'        /* TODO : Add expr here */
 
-assign_op: '='              /* TODO : Add -= and += */
+assign_op: '='
+         | PLUSEQUAL
+         | MINUSEQUAL
 
 expr: location
-    | method_call 
+    | method_call
+    | literal
+    /*| expr bin_op expr */
+    | '-' expr
+    | '!' expr
+    | '(' expr ')'
 
 comma_expr: /* empty string */ 
           | ',' expr comma_expr
 
 method_call: ID '(' ')'
            | ID '(' expr comma_expr ')'
+
+literal: INT_LITERAL
+       /*| CHAR_LITERAL*/
+       | BOOL_LITERAL
 
 field_decl_star: /* empty string */ %prec "empty"
                | field_decl field_decl_star

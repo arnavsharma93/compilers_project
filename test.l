@@ -29,7 +29,13 @@ int_literal  {decimal_literal}|{hex_literal}
 "for"       {return FOR;}
 "return"    {return RETURN;}
 "break"     {return BREAK;}
+"continue"  {return CONTINUE;}
+
 "int"|"boolean" {return TYPE;}
+"true"|"false"  {return BOOL_LITERAL;}
+"+="        {return PLUSEQUAL;}
+"-="        {return MINUSEQUAL;}
+
 {alpha}{alpha_num}*  {return ID;}
 {int_literal} {return INT_LITERAL;}
 
