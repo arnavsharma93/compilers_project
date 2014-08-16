@@ -17,15 +17,6 @@ delim   [ \t\n]
 alpha_num  {alpha}|{digit}
 
 %%
-";" {return SEMICOLON;}
-"["  {return OPENSQ;}
-"]"  {return CLOSESQ;}
-"{"  {return OPENBLOCK;}
-"}"  {return CLOSEBLOCK;}
-"("  {return OPENROUND;}
-")"  {return CLOSEROUND;}
-","  {return COMMA;}
-
 "class"     {return CLASS;}
 "Program"   {return PROGRAM;}
 "void"      {return VOID;}
@@ -34,6 +25,8 @@ alpha_num  {alpha}|{digit}
 {alpha}{alpha_num}*  {return ID;}
 
 {delim}+    {}
+
+. { return *yytext; }
 
 %%
 

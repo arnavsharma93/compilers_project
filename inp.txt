@@ -1,9 +1,11 @@
 class    Program
 {
-    int _a123asd_asda, dsa , asdfad;
-    int _a123asd_asda, dsa , asdfad;
-    int _a123asd_asda, dsa , asdfad;
-    int main(int foo, int bar)
-    int main_bool(boolean foo, boolean bar)
-    void main_void()
+    int _a123asd_asda, a, b, v;
+    
+    void main(int asf, int ds)
+    void main(int asf, int ds)
+    void main(int asf, int ds)
+    int main(int asf, int ds)
+    int main()
+    
 }

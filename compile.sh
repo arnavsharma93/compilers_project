@@ -1,4 +1,4 @@
-bison -d grammar.y
+bison -d --verbose --debug grammar.y
 flex test.l
 gcc -g -c grammar.tab.c -o grammar.tab.o
 gcc -g -c lex.yy.c -o lex.yy.o
