@@ -10,7 +10,6 @@ void yyerror (char const *s) {
 }
 
 %}
-
 digit	[0-9]
 alpha	[a-zA-Z_]
 delim   [ \t\n]
@@ -24,6 +23,8 @@ string_literal (\"){char}*(\")
 char [^(\\)(\")(\')]|(\\)(\')|(\\)(\")|(\\)(\\)|\\[nt]
 
 %%
+
+\/\/.*$  {}
 "class"     {return CLASS;}
 "Program"   {return PROGRAM;}
 "void"      {return VOID;}
@@ -50,7 +51,6 @@ char [^(\\)(\")(\')]|(\\)(\')|(\\)(\")|(\\)(\\)|\\[nt]
 {string_literal} {return STRING_LITERAL;}
 
 {delim}+    {}
-
 . { return *yytext; }
 
 %%
