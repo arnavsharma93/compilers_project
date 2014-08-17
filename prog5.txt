@@ -1,0 +1,11 @@
+class Program{
+    int a;
+	int main()
+	{
+		int temp;
+		temp = 5+6-7*9/10;
+		print(temp);
+		return temp;
+	}
+
+}
