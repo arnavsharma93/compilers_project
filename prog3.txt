@@ -1,0 +1,10 @@
+class Program
+{
+	int p, q, r;
+	boolean is_present;
+	int a[100], x, y, b[100], z;
+
+	int main(){
+		return;
+	}
+}

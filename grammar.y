@@ -129,7 +129,7 @@ cond_op: COND_OP;
 */
 
 field_decl_star: /* empty string */ %prec "empty"
-               | field_decl field_decl_star
+               | field_decl_star field_decl
 
 field_decl: TYPE simple_or_array comma_simple_or_array';';
 
