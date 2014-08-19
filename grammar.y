@@ -75,7 +75,7 @@ statement: location assign_op expr ';'
          | method_call ';'
          | IF '(' expr ')' block
          | IF '(' expr ')' block ELSE block
-         | FOR ID '=' expr ',' expr block       /* TODO : Test this */
+         | FOR ID '=' expr ',' expr block
          | RETURN ';'
          | RETURN expr ';'
          | BREAK ';'
@@ -83,7 +83,7 @@ statement: location assign_op expr ';'
          | block
 
 location: ID
-        | ID '[' expr ']'        /* TODO : Add expr here */
+        | ID '[' expr ']'
 
 assign_op: '='
          | PLUSEQUAL
