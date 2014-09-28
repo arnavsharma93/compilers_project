@@ -1,0 +1,59 @@
+class Program
+{
+    int arr[100], sum;
+    int temp, unused_var, _var;
+
+    // This method computes the sum of the array.
+    int compute_sum(int a, int b, int c, boolean is_a)
+    {
+        int sum, i;
+        sum = 0;
+        {
+            for i = 0, 100{
+                sum += arr[i] + 0x11;
+
+                if(arr[i] < 0)
+                {
+                    callout("print", arr[i], "small number");
+                    print(arr[i], adsf, asdfa);
+                    break;
+                }
+                else
+                {
+                    callout("print", arr[i], "large number");
+                    continue;
+                }
+
+            }
+        }
+        return sum;
+    }
+
+    // Computes the square of a number
+    int square(int a)
+    {
+        if(a < 0)
+        {
+            a = -1 * a;
+            a = -a;
+            a = -a;
+        }
+        return a*a;
+    }
+
+    void main()
+    {
+        int sum_sq;
+        sum = compute_sum();
+
+        sum_sq = square(sum);
+
+        expr = (sum + 2)/10 * 23;
+
+        arr[99] = square(sum);
+
+        return;
+
+    }
+
+}
