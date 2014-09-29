@@ -1,0 +1,26 @@
+Compilers Course Project -
+	Somay Jain (201101054)
+	Arnav Sharma (201125093)
+
+Description : 
+	A parser and AST representation for the decaf programming language with the following specifications - http://192.168.36.187/mediawiki/images/c/c2/Decafspec.pdf
+	Made using flex and bison.
+
+Compiling Instructions : 
+	make clean; make
+
+	Note : Some UNIX systems might require -lfl instead of -ll in the last command, so you might have to edit the makefile.
+
+Running the parser :
+	
+	./Parser < input_program
+
+Sample input programs : 
+	prog1.txt
+	prog2.txt
+	prog3.txt
+	prog4.txt
+	prog5.txt
+	prog6.txt
+
+The input program is successfully parsed and a AST representation is printed on the console, with nodes separated by tabs. The Parser throws a syntax error if the input program is not according to Decaf specifications.

@@ -29,31 +29,6 @@ class Program
         return sum;
     }
 
-    // Computes the square of a number
-    int square(int a)
-    {
-        if(a < 0)
-        {
-            a = -1 * a;
-            a = -a;
-            a = -a;
-        }
-        return a*a;
-    }
-
-    void main()
-    {
-        int sum_sq;
-        sum = compute_sum();
-
-        sum_sq = square(sum);
-
-        expr = (sum + 2)/10 * 23;
-
-        arr[99] = square(sum);
-
-        return;
-
-    }
+    
 
 }

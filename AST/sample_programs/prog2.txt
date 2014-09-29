@@ -1,0 +1,29 @@
+// class Program
+class Program{
+	boolean is_present;
+	int num[100], temp;
+
+	void init()
+	{
+		is_present = False;
+	}
+
+	int main(){
+		int i;
+		for i=0, 99{
+			if(a[i]==5)
+			{
+				is_present = True;
+			}
+		}
+
+		if(is_present)
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+}
