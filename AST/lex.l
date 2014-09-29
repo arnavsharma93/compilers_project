@@ -32,8 +32,8 @@ char [^(\\)(\")(\')]|(\\)(\')|(\\)(\")|(\\)(\\)|\\[nt]
 "continue"  {return CONTINUE;}
 "callout"   {return CALLOUT;}
 "int"|"boolean" {yylval.type = strdup(yytext);return TYPE;}
-"true"		{return BOOL_LITERAL;}
-"false"  	{return BOOL_LITERAL;}
+"true"		{yylval.bool_literal = true;return BOOL_LITERAL;}
+"false"  	{yylval.bool_literal = false;return BOOL_LITERAL;}
 "+="        {return PLUSEQUAL;}
 "-="        {return MINUSEQUAL;}
 "<="        {return LESSEQUAL;}

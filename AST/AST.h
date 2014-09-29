@@ -11,13 +11,18 @@ class assign_op_node{
 		int op;
 	public:
 		assign_op_node(int op);
+		void evaluate();
 };
 
 class expr_node{
+	public:
+		virtual void evaluate() = 0;
 
 };
 
 class method_call_node{
+	public:
+		virtual void evaluate() = 0;
 
 };
 
@@ -28,44 +33,51 @@ class var_decl_node{
 		list<string> *id_list;
 	public:
 		var_decl_node(string type, list<string> *id_list);
+		void evaluate();
 };
 /***************************************************************/
 
 /*********************** Literal Nodes *************************/
 class literal_node{
-
+	public:
+		virtual void evaluate() = 0;
 };
 class int_literal_node : public literal_node{
 	protected:
 		int value;
 	public:
 		int_literal_node(int value);
+		void evaluate();
 };
 class char_literal_node : public literal_node{
 	protected:
 		string value;
 	public:
 		char_literal_node(string value);
+		void evaluate();
 };
 class bool_literal_node : public literal_node{
 	protected:
 		bool value;
 	public:
 		bool_literal_node(bool value);
+		void evaluate();
 };
 /***************************************************************/
 
 
 /*********************** Location Nodes ************************/
 class location_node{
-	// TODO : Make this protected after removing the debug
-	public:
+	protected:
 		string id;
+	public:
+		virtual void evaluate() = 0;
 };
 
 class memory_loc : public location_node{
 	public:
 		memory_loc(string id);
+		void evaluate();
 };
 
 class array_loc : public location_node{
@@ -73,6 +85,7 @@ class array_loc : public location_node{
 		expr_node *expr;
 	public:
 		array_loc(string id, expr_node *expr);
+		void evaluate();
 };
 /**************************************************************/
 
@@ -83,6 +96,7 @@ class method_call_expr_node : public expr_node{
 		method_call_node *method_call;
 	public:
 		method_call_expr_node(method_call_node *method_call);
+		void evaluate();
 };
 
 class literal_expr_node : public expr_node{
@@ -90,6 +104,7 @@ class literal_expr_node : public expr_node{
 		literal_node *literal;
 	public:
 		literal_expr_node(literal_node *literal);
+		void evaluate();
 };
 
 class operator_node : public expr_node{
@@ -97,6 +112,7 @@ class operator_node : public expr_node{
 		expr_node *left, *right;
 	public:
 		operator_node(expr_node *left, expr_node *right);
+		void evaluate();
 };
 
 class not_expr_node : public expr_node{
@@ -104,6 +120,7 @@ class not_expr_node : public expr_node{
 		expr_node *expr;
 	public:
 		not_expr_node(expr_node *expr);
+		void evaluate();
 };
 
 class negate_expr_node : public expr_node{
@@ -111,6 +128,7 @@ class negate_expr_node : public expr_node{
 		expr_node *expr;
 	public:
 		negate_expr_node(expr_node *expr);
+		void evaluate();
 };
 
 class location_expr_node : public expr_node{
@@ -118,6 +136,7 @@ class location_expr_node : public expr_node{
 		location_node* location;
 	public:
 		location_expr_node(location_node* location);
+		void evaluate();
 };
 
 class product_node : public operator_node{
@@ -189,6 +208,8 @@ class cond_or_node : public operator_node{
 
 /*********************** Statement Nodes ************************/
 class statement_node{
+	public:
+		virtual void evaluate() = 0;
 };
 
 class block_node{
@@ -197,6 +218,7 @@ class block_node{
 		list<var_decl_node*> *var_list;
 	public:
 		block_node(list<var_decl_node*> *var_list, list<statement_node*> *statement_list);
+		void evaluate();
 };
 
 class method_call_stmt : public statement_node{
@@ -204,6 +226,7 @@ class method_call_stmt : public statement_node{
 		method_call_node* method_call;
 	public:
 		method_call_stmt(method_call_node* method_call);
+		void evaluate();
 };
 
 class assignment_stmt : public statement_node{
@@ -213,6 +236,7 @@ class assignment_stmt : public statement_node{
 		expr_node *expr;
 	public:
 		assignment_stmt(location_node *location, assign_op_node * assign_op, expr_node *expr);
+		void evaluate();
 };
 
 class if_stmt : public statement_node{
@@ -221,6 +245,7 @@ class if_stmt : public statement_node{
 		expr_node *expr;
 	public:
 		if_stmt(expr_node *expr, block_node *block);
+		void evaluate();
 };
 
 class if_else_stmt : public statement_node{
@@ -229,6 +254,7 @@ class if_else_stmt : public statement_node{
 		expr_node *expr;
 	public:
 		if_else_stmt(expr_node *expr, block_node *if_block, block_node *else_block);
+		void evaluate();
 };
 
 class for_stmt : public statement_node{
@@ -238,12 +264,14 @@ class for_stmt : public statement_node{
 		block_node *block;
 	public:
 		for_stmt(string id, expr_node *init_expr, expr_node *term_expr, block_node *block);
+		void evaluate();
 
 };
 
 class return_stmt : public statement_node{
 	public:
 		return_stmt();
+		void evaluate();
 };
 
 class return_expr_stmt : public statement_node{
@@ -251,16 +279,19 @@ class return_expr_stmt : public statement_node{
 		expr_node *expr;
 	public:
 		return_expr_stmt(expr_node *expr);
+		void evaluate();
 };
 
 class break_stmt : public statement_node{
 	public:
 		break_stmt();
+		void evaluate();
 };
 
 class continue_stmt : public statement_node{
 	public:
 		continue_stmt();
+		void evaluate();
 };
 
 class block_stmt : public statement_node{
@@ -268,12 +299,14 @@ class block_stmt : public statement_node{
 		block_node *block;
 	public:
 		block_stmt(block_node *block);
+		void evaluate();
 };
 /**************************************************************/
 
 /*********************** Callout Arg Nodes *********************************/
 class callout_arg_node{
-
+	public:
+		virtual void evaluate() = 0;
 };
 
 class callout_arg_expr : public callout_arg_node{
@@ -281,6 +314,7 @@ class callout_arg_expr : public callout_arg_node{
 		expr_node *expr;
 	public:
 		callout_arg_expr(expr_node *expr);
+		void evaluate();
 };
 
 class callout_arg_string : public callout_arg_node{
@@ -288,6 +322,7 @@ class callout_arg_string : public callout_arg_node{
 		string arg;
 	public:
 		callout_arg_string(string arg);
+		void evaluate();
 };
 
 /********************** METHOD CALL Nodes *********************************/
@@ -297,6 +332,7 @@ class method_call_by_id : public method_call_node{
 		list<expr_node*> *param_list;
 	public:
 		method_call_by_id(string id, list<expr_node*> *param_list);
+		void evaluate();
 };
 
 class method_call_by_callout : public method_call_node{
@@ -305,6 +341,7 @@ class method_call_by_callout : public method_call_node{
 		list<callout_arg_node*> *callout_args;
 	public:
 		method_call_by_callout(string name, list<callout_arg_node*> *callout_args);
+		void evaluate();
 };
 /*************************************************************************/
 
@@ -315,10 +352,12 @@ class argument_node{
 		string id, type;
 	public:
 		argument_node(string type, string id);
+		void evaluate();
 };
 
 class field_decl_id_node{
-
+	public:
+		virtual void evaluate() = 0;
 };
 
 class field_decl_id_simple : public field_decl_id_node{
@@ -326,6 +365,7 @@ class field_decl_id_simple : public field_decl_id_node{
 		string id;
 	public:
 		field_decl_id_simple(string id);
+		void evaluate();
 };
 
 class field_decl_id_array : public field_decl_id_node{
@@ -334,6 +374,7 @@ class field_decl_id_array : public field_decl_id_node{
 		int int_literal;
 	public:
 		field_decl_id_array(string id, int int_literal);
+		void evaluate();
 };
 
 class field_decl_node{
@@ -342,12 +383,12 @@ class field_decl_node{
 		list<field_decl_id_node*> *field_decl_id_list;
 	public:
 		field_decl_node(string type, list<field_decl_id_node*> *field_decl_id_list);
+		void evaluate();
 
 };
 
 class method_decl_node{
-	// TODO : Make these protected and remove the debug loop from program constructor.
-	public:
+	protected:
 		string id, type;
 		list<argument_node*> *arg_list;
 		block_node* block;
