@@ -9,7 +9,7 @@ YFLAGS= -d -t -y
 RM = /bin/rm -f
 
 Parser: AST.o y.tab.o lex.yy.o 
-	${CCC} ${CCFLAGS} lex.yy.o y.tab.o AST.o -o Parser -ll
+	${CCC} ${CCFLAGS} lex.yy.o y.tab.o AST.o -o Parser -ll `llvm-config --cxxflags --ldflags --system-libs --libs core`
 
 AST.o: AST.cpp AST.h
 	clang++ -c -O3 AST.cpp `llvm-config --cxxflags --ldflags --system-libs --libs core`

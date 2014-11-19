@@ -1,9 +1,9 @@
 %{
   #include "llvm/IR/Verifier.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
+  #include "llvm/IR/DerivedTypes.h"
+  #include "llvm/IR/IRBuilder.h"
+  #include "llvm/IR/LLVMContext.h"
+  #include "llvm/IR/Module.h"
   #include <iostream>
   #include <string>
   #include <stdlib.h>
@@ -12,12 +12,19 @@
   #include <math.h>
   #include "AST.h"
   using namespace std;
+  using namespace llvm;
 
   int yylex();
   void yyerror(char * s);
 
   program* root;
   int line_num = 1;
+
+  static Module *TheModule;
+  static IRBuilder<> Builder(getGlobalContext());
+  static std::map<std::string, Value*> NamedValues;
+
+  Value *ErrorV(const char *Str) { printf("Error : %s\n", Str );; return 0; }
   
 %}
 
@@ -317,8 +324,14 @@ comma_id: /* empty string */                                        {$$ = new li
 int main()
 {
   //  yydebug = 1;
+  LLVMContext &Context = getGlobalContext();
+  TheModule = new Module("Decaf Compiler", Context);
+
   yyparse();
   root->evaluate();
+
+  // Print out all of the generated code.
+  TheModule->dump();
 }
 
 void yyerror(char * s)
