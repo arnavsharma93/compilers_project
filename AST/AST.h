@@ -1,3 +1,8 @@
+#include <llvm/IR/Verifier.h>
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
 #include <iostream>
 #include <stdlib.h>
 #include <string>
@@ -5,6 +10,7 @@
 #include <list>
 
 using namespace std;
+using namespace llvm;
 
 class assign_op_node{
 	protected:
@@ -12,18 +18,19 @@ class assign_op_node{
 	public:
 		assign_op_node(int op);
 		void evaluate();
+		// virtual Value *Codegen() = 0;
 };
 
 class expr_node{
 	public:
 		virtual void evaluate() = 0;
-
+		// virtual Value *Codegen() = 0;
 };
 
 class method_call_node{
 	public:
 		virtual void evaluate() = 0;
-
+		// virtual Value *Codegen() = 0;
 };
 
 /*********************** Var Decl Nodes ************************/
@@ -34,6 +41,7 @@ class var_decl_node{
 	public:
 		var_decl_node(string type, list<string> *id_list);
 		void evaluate();
+		// virtual Value *Codegen() = 0;
 };
 /***************************************************************/
 
@@ -41,6 +49,7 @@ class var_decl_node{
 class literal_node{
 	public:
 		virtual void evaluate() = 0;
+		// virtual Value *Codegen() = 0;
 };
 class int_literal_node : public literal_node{
 	protected:
@@ -48,6 +57,7 @@ class int_literal_node : public literal_node{
 	public:
 		int_literal_node(int value);
 		void evaluate();
+		// virtual Value *Codegen();
 };
 class char_literal_node : public literal_node{
 	protected:
@@ -55,6 +65,7 @@ class char_literal_node : public literal_node{
 	public:
 		char_literal_node(string value);
 		void evaluate();
+		// virtual Value *Codegen();
 };
 class bool_literal_node : public literal_node{
 	protected:
@@ -62,6 +73,7 @@ class bool_literal_node : public literal_node{
 	public:
 		bool_literal_node(bool value);
 		void evaluate();
+		// virtual Value *Codegen();
 };
 /***************************************************************/
 
@@ -72,12 +84,14 @@ class location_node{
 		string id;
 	public:
 		virtual void evaluate() = 0;
+		// virtual Value *Codegen() = 0;
 };
 
 class memory_loc : public location_node{
 	public:
 		memory_loc(string id);
 		void evaluate();
+		// virtual Value *Codegen();
 };
 
 class array_loc : public location_node{
@@ -86,6 +100,7 @@ class array_loc : public location_node{
 	public:
 		array_loc(string id, expr_node *expr);
 		void evaluate();
+		// virtual Value *Codegen();
 };
 /**************************************************************/
 

@@ -1,5 +1,9 @@
 %{
-  
+  #include "llvm/IR/Verifier.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
   #include <iostream>
   #include <string>
   #include <stdlib.h>
@@ -52,7 +56,7 @@
     literal_node* literal;
 }
 
-%token <id> ID
+%token <id> IDENTIFIER
 %token CLASS
 %token PROGRAM
 %token <type> VOID
@@ -129,23 +133,23 @@ method_decl_star: /*empty string */                             {$$ = new list<m
                                                                 }
 
 /* COMPLETED */
-method_decl: VOID ID '(' ')' block                              {
+method_decl: VOID IDENTIFIER '(' ')' block                              {
                                                                     list<argument_node*> *arg_list = new list<argument_node*>();
                                                                     $$ = new method_decl_node($1, $2, arg_list, $5);
                                                                 }
-           | VOID ID '(' TYPE ID comma_type_id ')' block        {
+           | VOID IDENTIFIER '(' TYPE IDENTIFIER comma_type_id ')' block        {
                                                                     argument_node* a = new argument_node($4, $5);
                                                                     $6->push_front(a);
 
                                                                     $$ = new method_decl_node($1, $2, $6, $8);
                                                                 }
-           | TYPE ID '(' TYPE ID comma_type_id ')' block        {
+           | TYPE IDENTIFIER '(' TYPE IDENTIFIER comma_type_id ')' block        {
                                                                     argument_node* a = new argument_node($4, $5);
                                                                     $6->push_front(a);
                                                                     
                                                                     $$ = new method_decl_node($1, $2, $6, $8);
                                                                 }
-           | TYPE ID '(' ')' block                              {
+           | TYPE IDENTIFIER '(' ')' block                              {
                                                                     list<argument_node*> *arg_list = new list<argument_node*>();
                                                                     $$ = new method_decl_node($1, $2, arg_list, $5);
                                                                 }
@@ -153,7 +157,7 @@ method_decl: VOID ID '(' ')' block                              {
 
 /* COMPLETED */
 comma_type_id: /* empty string */                               {$$ = new list<argument_node*>();}
-             | ',' TYPE ID comma_type_id                        {
+             | ',' TYPE IDENTIFIER comma_type_id                        {
                                                                     argument_node* a = new argument_node($2, $3);
                                                                     $4->push_front(a);
                                                                     $$ = $4;
@@ -172,7 +176,7 @@ var_decl_star: /* empty string */                               {$$ = new list<v
                                                                 }
 
 /* COMPLETED */
-var_decl: TYPE ID comma_id ';'                                  {
+var_decl: TYPE IDENTIFIER comma_id ';'                                  {
                                                                     $3->push_front($2);
                                                                     $$ = new var_decl_node($1, $3);
                                                                 }
@@ -188,7 +192,7 @@ statement: location assign_op expr ';'                          {$$ = new assign
          | method_call ';'                                      {$$ = new method_call_stmt($1);}
          | IF '(' expr ')' block                                {$$ = new if_stmt($3, $5);}
          | IF '(' expr ')' block ELSE block                     {$$ = new if_else_stmt($3, $5, $7);}
-         | FOR ID '=' expr ',' expr block                       {$$ = new for_stmt($2, $4, $6, $7);}
+         | FOR IDENTIFIER '=' expr ',' expr block                       {$$ = new for_stmt($2, $4, $6, $7);}
          | RETURN ';'                                           {$$ = new return_stmt();}
          | RETURN expr ';'                                      {$$ = new return_expr_stmt($2);}
          | BREAK ';'                                            {$$ = new break_stmt();}
@@ -196,8 +200,8 @@ statement: location assign_op expr ';'                          {$$ = new assign
          | block                                                {$$ = new block_stmt($1);}                                        
 
 /* COMPLETED */
-location: ID                                                    {$$ = new memory_loc($1);}
-        | ID '[' expr ']'                                       {$$ = new array_loc($1, $3);}
+location: IDENTIFIER                                                    {$$ = new memory_loc($1);}
+        | IDENTIFIER '[' expr ']'                                       {$$ = new array_loc($1, $3);}
 
 /* COMPLETED */
 assign_op: '='                                                  {$$ = new assign_op_node('=');}
@@ -232,11 +236,11 @@ comma_expr: /* empty string */                                  {$$ = new list<e
                                                                     $$ = $3;
                                                                 }
 /* COMPLETED */
-method_call: ID '(' ')'                                                     {
+method_call: IDENTIFIER '(' ')'                                                     {
                                                                                 $$ = new method_call_by_id($1, 
                                                                                         new list<expr_node*>());
                                                                             }
-          | ID '(' expr comma_expr ')'                                      {
+          | IDENTIFIER '(' expr comma_expr ')'                                      {
                                                                                 $4->push_front($3);
                                                                                 $$ = new method_call_by_id($1, $4);
                                                                             }
@@ -289,8 +293,8 @@ field_decl: TYPE simple_or_array comma_simple_or_array';'          {
                                                                     }
 
 /* COMPLETED */
-simple_or_array: ID                                                 {$$ = new field_decl_id_simple($1);}
-               | ID '[' INT_LITERAL ']'                             {$$ = new field_decl_id_array($1, $3);}
+simple_or_array: IDENTIFIER                                                 {$$ = new field_decl_id_simple($1);}
+               | IDENTIFIER '[' INT_LITERAL ']'                             {$$ = new field_decl_id_array($1, $3);}
                ;
 
 /* COMPLETED */
@@ -303,7 +307,7 @@ comma_simple_or_array: /* empty string */                           {$$ = new li
 
 /* COMPLETED */
 comma_id: /* empty string */                                        {$$ = new list<string>();}
-        | ',' ID comma_id                                           {
+        | ',' IDENTIFIER comma_id                                           {
                                                                         $3->push_front($2);
                                                                         $$ = $3;
                                                                     }

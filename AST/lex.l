@@ -3,6 +3,11 @@
 #include "y.tab.h"
 
 #include <stdio.h>
+#include "llvm/IR/Verifier.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
 extern int line_num;
 
 %}
@@ -42,7 +47,7 @@ char [^(\\)(\")(\')]|(\\)(\')|(\\)(\")|(\\)(\\)|\\[nt]
 "!="        {return NOTEQUAL;}
 "&&"        {return COND_AND;}
 "||"        {return COND_OR;}
-{alpha}{alpha_num}*  {yylval.id = strdup(yytext);return ID;}
+{alpha}{alpha_num}*  {yylval.id = strdup(yytext);return IDENTIFIER;}
 {hex_literal}	{
 					yylval.int_literal = (int)strtol(yytext, NULL, 16);
 					return INT_LITERAL;
