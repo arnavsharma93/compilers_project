@@ -10,6 +10,8 @@
 #include <list>
 #include "AST.h"
 
+#define debug 1
+
 using namespace std;
 
 int level = 0;
@@ -64,6 +66,14 @@ void int_literal_node::evaluate()
 	level++;
 	cout << "Int literal VALUE " << value << endl;
 	level--;
+	this->Codegen();
+}
+Value *int_literal_node::Codegen()
+{
+	Value *temp = ConstantInt::get(getGlobalContext(), APInt(32, this->value));
+	if(debug)
+		temp->dump();
+	return temp;
 }
 char_literal_node::char_literal_node(string value){
 	this->value = value;
@@ -73,8 +83,16 @@ void char_literal_node::evaluate()
 {
 	print_tabs(level);
 	level++;
-	cout << "Char literal VALUE " << value << endl;
-	level--;	
+	cout << "Char literal VALUE " << value[1] << endl;
+	level--;
+	this->Codegen();	
+}
+Value *char_literal_node::Codegen()
+{
+	Value *temp = ConstantInt::get(getGlobalContext(), APInt(8, this->value[1]));
+	if(debug)
+		temp->dump();
+	return temp;
 }
 bool_literal_node::bool_literal_node(bool value){
 	this->value = value;
@@ -86,6 +104,14 @@ void bool_literal_node::evaluate()
 	level++;
 	cout << "Bool literal VALUE " << value << endl;
 	level--;
+	this->Codegen();
+}
+Value *bool_literal_node::Codegen()
+{
+	Value *temp = ConstantInt::get(getGlobalContext(), APInt(1, this->value));
+	if(debug)
+		temp->dump();
+	return temp;
 }
 /**************************************************************/
 
@@ -274,6 +300,7 @@ void assignment_stmt::evaluate()
 	level++;
 	cout << "assignment_stmt " << endl;	
 	level--;	
+	this->expr->evaluate();
 }
 
 if_stmt::if_stmt(expr_node *expr, block_node *block)

@@ -125,21 +125,18 @@
 %%
 
 
-/* COMPLETED */
 program: CLASS PROGRAM '{' field_decl_star method_decl_star '}' {
                                                                     printf("In program rule\n");
                                                                     $$ = new program($4, $5);
                                                                     root = $$;
                                                                 }
 
-/* COMPLETED */
 method_decl_star: /*empty string */                             {$$ = new list<method_decl_node*>();}
                 | method_decl method_decl_star                  {
                                                                     $2->push_front($1);
                                                                     $$ = $2;
                                                                 }
 
-/* COMPLETED */
 method_decl: VOID IDENTIFIER '(' ')' block                              {
                                                                     list<argument_node*> *arg_list = new list<argument_node*>();
                                                                     $$ = new method_decl_node($1, $2, arg_list, $5);
@@ -162,7 +159,6 @@ method_decl: VOID IDENTIFIER '(' ')' block                              {
                                                                 }
            ;
 
-/* COMPLETED */
 comma_type_id: /* empty string */                               {$$ = new list<argument_node*>();}
              | ',' TYPE IDENTIFIER comma_type_id                        {
                                                                     argument_node* a = new argument_node($2, $3);
@@ -170,31 +166,26 @@ comma_type_id: /* empty string */                               {$$ = new list<a
                                                                     $$ = $4;
                                                                 }
 
-/* COMPLETED */
 block: '{' var_decl_star statement_star '}'                     {
                                                                     $$ = new block_node($2, $3);
                                                                 }
 
-/* COMPLETED */
 var_decl_star: /* empty string */                               {$$ = new list<var_decl_node*>();}
              | var_decl var_decl_star                           {
                                                                     $2->push_front($1);
                                                                     $$ = $2;
                                                                 }
 
-/* COMPLETED */
 var_decl: TYPE IDENTIFIER comma_id ';'                                  {
                                                                     $3->push_front($2);
                                                                     $$ = new var_decl_node($1, $3);
                                                                 }
 
-/* COMPLETED */
 statement_star: /* empty string */                              {$$ = new list<statement_node*>();}
               | statement statement_star                        {
                                                                     $2->push_front($1);
                                                                     $$ = $2;
                                                                 }
-/* COMPLETED */
 statement: location assign_op expr ';'                          {$$ = new assignment_stmt($1, $2, $3);}
          | method_call ';'                                      {$$ = new method_call_stmt($1);}
          | IF '(' expr ')' block                                {$$ = new if_stmt($3, $5);}
@@ -206,16 +197,13 @@ statement: location assign_op expr ';'                          {$$ = new assign
          | CONTINUE ';'                                         {$$ = new continue_stmt();}
          | block                                                {$$ = new block_stmt($1);}                                        
 
-/* COMPLETED */
 location: IDENTIFIER                                                    {$$ = new memory_loc($1);}
         | IDENTIFIER '[' expr ']'                                       {$$ = new array_loc($1, $3);}
 
-/* COMPLETED */
 assign_op: '='                                                  {$$ = new assign_op_node('=');}
          | PLUSEQUAL                                            {$$ = new assign_op_node(PLUSEQUAL);}
          | MINUSEQUAL                                           {$$ = new assign_op_node(MINUSEQUAL);}
 
-/* COMPLETED */
 expr: location                                                  {$$ = new location_expr_node($1);}
     | method_call                                               {$$ = new method_call_expr_node($1);}
     | literal                                                   {$$ = new literal_expr_node($1);}
@@ -236,13 +224,11 @@ expr: location                                                  {$$ = new locati
     | expr COND_AND expr                                        {$$ = new cond_and_node($1, $3);}
     | expr COND_OR expr                                         {$$ = new cond_or_node($1, $3);}
 
-/* COMPLETED */
 comma_expr: /* empty string */                                  {$$ = new list<expr_node*>();}
           | ',' expr comma_expr                                 {
                                                                     $3->push_front($2);
                                                                     $$ = $3;
                                                                 }
-/* COMPLETED */
 method_call: IDENTIFIER '(' ')'                                                     {
                                                                                 $$ = new method_call_by_id($1, 
                                                                                         new list<expr_node*>());
@@ -260,11 +246,11 @@ method_call: IDENTIFIER '(' ')'                                                 
                                                                                 $$ = new method_call_by_callout($3, $6);
                                                                             }
 
-/* COMPLETED */
+
 callout_arg: expr                                                           {$$ = new callout_arg_expr($1);}
            | STRING_LITERAL                                                 {$$ = new callout_arg_string($1);}
 
-/* COMPLETED */
+
 comma_callout_arg: /* empty string */                                       {$$ = new list<callout_arg_node*>();}
                  | ',' callout_arg comma_callout_arg                        {
                                                                                 $3->push_front($2);
@@ -286,25 +272,21 @@ eq_op: NOTEQUAL | EQEQUAL;
 cond_op: COND_OP;
 */
 
-/* COMPLETED */
 field_decl_star: /* empty string */ %prec "empty"                   {$$ = new list<field_decl_node*>();}
                | field_decl_star field_decl                         {
                                                                             $1->push_back($2);
                                                                             $$ = $1;
                                                                     }
 
-/* COMPLETED */
 field_decl: TYPE simple_or_array comma_simple_or_array';'          {
                                                                             $3->push_front($2);
                                                                             $$ = new field_decl_node($1, $3);
                                                                     }
 
-/* COMPLETED */
 simple_or_array: IDENTIFIER                                                 {$$ = new field_decl_id_simple($1);}
                | IDENTIFIER '[' INT_LITERAL ']'                             {$$ = new field_decl_id_array($1, $3);}
                ;
 
-/* COMPLETED */
 comma_simple_or_array: /* empty string */                           {$$ = new list<field_decl_id_node*>();}
                      | ',' simple_or_array comma_simple_or_array    {
                                                                         $3->push_front($2); 
@@ -312,7 +294,6 @@ comma_simple_or_array: /* empty string */                           {$$ = new li
                                                                     }
                      ;
 
-/* COMPLETED */
 comma_id: /* empty string */                                        {$$ = new list<string>();}
         | ',' IDENTIFIER comma_id                                           {
                                                                         $3->push_front($2);

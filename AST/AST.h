@@ -1,4 +1,4 @@
-#include <llvm/IR/Verifier.h>
+#include "llvm/IR/Verifier.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
@@ -46,10 +46,11 @@ class var_decl_node{
 /***************************************************************/
 
 /*********************** Literal Nodes *************************/
+/* COMPLETED */
 class literal_node{
 	public:
 		virtual void evaluate() = 0;
-		// virtual Value *Codegen() = 0;
+		virtual Value *Codegen() = 0;
 };
 class int_literal_node : public literal_node{
 	protected:
@@ -57,7 +58,7 @@ class int_literal_node : public literal_node{
 	public:
 		int_literal_node(int value);
 		void evaluate();
-		// virtual Value *Codegen();
+		virtual Value *Codegen();
 };
 class char_literal_node : public literal_node{
 	protected:
@@ -65,7 +66,7 @@ class char_literal_node : public literal_node{
 	public:
 		char_literal_node(string value);
 		void evaluate();
-		// virtual Value *Codegen();
+		virtual Value *Codegen();
 };
 class bool_literal_node : public literal_node{
 	protected:
@@ -73,7 +74,7 @@ class bool_literal_node : public literal_node{
 	public:
 		bool_literal_node(bool value);
 		void evaluate();
-		// virtual Value *Codegen();
+		virtual Value *Codegen();
 };
 /***************************************************************/
 
