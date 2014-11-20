@@ -1,6 +1,6 @@
 
 CCC = g++
-CCFLAGS= -O2
+CCFLAGS= -O2 -w
 LEX = flex
 LFLAGS= -8     
 YACC= bison 
@@ -12,7 +12,7 @@ Parser: AST.o y.tab.o lex.yy.o
 	${CCC} ${CCFLAGS} lex.yy.o y.tab.o AST.o -o Parser -ll `llvm-config --cxxflags --ldflags --system-libs --libs core`
 
 AST.o: AST.cpp AST.h
-	clang++ -c -O3 AST.cpp `llvm-config --cxxflags --ldflags --system-libs --libs core`
+	clang++ -c ${CCFLAGS} AST.cpp `llvm-config --cxxflags --ldflags --system-libs --libs core`
 
 y.tab.o: grammar.y
 	${YACC} ${YFLAGS} grammar.y

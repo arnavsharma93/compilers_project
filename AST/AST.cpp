@@ -10,9 +10,30 @@
 #include <list>
 #include "AST.h"
 
-#define debug 1
+#define debug 0
 
 using namespace std;
+using namespace llvm;
+
+static IRBuilder<> Builder(getGlobalContext());
+static map<string, AllocaInst*> NamedValues;
+extern Module *TheModule;
+
+Value *ErrorV(const char *Str) { printf("Error : %s\n", Str );; exit(0); }
+void *Error(const char *Str) { printf("Error : %s\n", Str );; exit(0); }
+
+/// CreateEntryBlockAlloca - Create an alloca instruction in the entry block of
+/// the function.  This is used for mutable variables etc.
+AllocaInst *CreateEntryBlockAlloca(Function *TheFunction, string VarName, string type) 
+{
+    IRBuilder<> TmpB(&TheFunction->getEntryBlock(), TheFunction->getEntryBlock().begin());
+    Type *T;
+    if(type == "int")
+        T = Type::getInt32Ty(getGlobalContext());
+    if(type == "boolean")
+        T = Type::getInt1Ty(getGlobalContext());
+    return TmpB.CreateAlloca(T, 0, VarName);
+}
 
 int level = 0;
 void print_tabs(int levels)
@@ -65,8 +86,8 @@ void int_literal_node::evaluate()
 	print_tabs(level);
 	level++;
 	cout << "Int literal VALUE " << value << endl;
+	// this->Codegen();
 	level--;
-	this->Codegen();
 }
 Value *int_literal_node::Codegen()
 {
@@ -84,8 +105,8 @@ void char_literal_node::evaluate()
 	print_tabs(level);
 	level++;
 	cout << "Char literal VALUE " << value[1] << endl;
+	// this->Codegen();
 	level--;
-	this->Codegen();	
 }
 Value *char_literal_node::Codegen()
 {
@@ -103,8 +124,8 @@ void bool_literal_node::evaluate()
 	print_tabs(level);
 	level++;
 	cout << "Bool literal VALUE " << value << endl;
+	// this->Codegen();
 	level--;
-	this->Codegen();
 }
 Value *bool_literal_node::Codegen()
 {
@@ -162,7 +183,16 @@ void literal_expr_node::evaluate()
 	level++;
 	cout << "literal_expr_node" << endl;
 	literal->evaluate();
+	// this->Codegen();
 	level--;
+}
+
+Value* literal_expr_node::Codegen()
+{
+	Value *temp = literal->Codegen();
+	if(debug)
+		temp->dump();
+	return temp;
 }
 
 method_call_expr_node::method_call_expr_node(method_call_node *method_call)
@@ -177,6 +207,12 @@ void method_call_expr_node::evaluate()
 	cout << "method_call_expr_node" << endl;
 	method_call->evaluate();
 	level--;
+	// this->Codegen();
+}
+
+Value* method_call_expr_node::Codegen()
+{
+	return NULL;
 }
 
 operator_node::operator_node(expr_node *left, expr_node *right)
@@ -201,6 +237,8 @@ void operator_node::evaluate()
 	right->evaluate();
 
 	level--;
+
+	// this->Codegen();
 }
 
 not_expr_node::not_expr_node(expr_node *expr)
@@ -215,6 +253,17 @@ void not_expr_node::evaluate()
 	cout << "! expr_node" << endl;
 	expr->evaluate();
 	level--;
+
+	// this->Codegen();
+}
+
+Value* not_expr_node::Codegen()
+{
+	Value *E = expr->Codegen();
+	Value *temp = Builder.CreateNot(E, "nottmp");
+	if(debug)
+		temp->dump();
+	return temp;
 }
 
 negate_expr_node::negate_expr_node(expr_node *expr)
@@ -229,6 +278,17 @@ void negate_expr_node::evaluate()
 	cout << "- expr_node" << endl;
 	expr->evaluate();
 	level--;
+
+	// this->Codegen();
+}
+
+Value* negate_expr_node::Codegen()
+{
+	Value *E = expr->Codegen();
+	Value *temp = Builder.CreateNeg(E, "negtmp");
+	if(debug)
+		temp->dump();
+	return temp;
 }
 
 location_expr_node::location_expr_node(location_node* location)
@@ -243,33 +303,133 @@ void location_expr_node::evaluate()
 	cout << "location_expr_node" << endl;
 	location->evaluate();
 	level--;
+
+	// this->Codegen();
+}
+
+Value* location_expr_node::Codegen(){
+	return NULL;
 }
 
 product_node::product_node(expr_node *left, expr_node *right): operator_node(left, right){
 }
+Value* product_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateMul(L, R, "multmp");
+	if(debug)
+		temp->dump();
+	return temp;
+}
 division_node::division_node(expr_node *left, expr_node *right): operator_node(left, right){
+}
+Value* division_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateSDiv(L, R, "divtmp");
+	if(debug)
+		temp->dump();
+	return temp;
 }
 modulus_node::modulus_node(expr_node *left, expr_node *right): operator_node(left, right){
 }
+Value* modulus_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateSRem(L, R, "modtmp");
+	if(debug)
+		temp->dump();
+	return temp;
+}
 addition_node::addition_node(expr_node *left, expr_node *right): operator_node(left, right){
+}
+Value* addition_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateAdd(L, R, "addtmp");
+	if(debug)
+		temp->dump();
+	return temp;
 }
 subtraction_node::subtraction_node(expr_node *left, expr_node *right): operator_node(left, right){
 }
+Value* subtraction_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateSub(L, R, "subtmp");
+	if(debug)
+		temp->dump();
+	return temp;
+}
 less_node::less_node(expr_node *left, expr_node *right): operator_node(left, right){
+}
+Value* less_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateICmp(CmpInst::ICMP_SLT, L, R, "lesstmp");
+	if(debug)
+		temp->dump();
+	return temp;
 }
 less_eq_node::less_eq_node(expr_node *left, expr_node *right): operator_node(left, right){
 }
+Value* less_eq_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateICmp(CmpInst::ICMP_SLE, L, R, "lesseqtmp");
+	if(debug)
+		temp->dump();
+	return temp;	
+}
 greater_node::greater_node(expr_node *left, expr_node *right): operator_node(left, right){
+}
+Value* greater_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateICmp(CmpInst::ICMP_SGT, L, R, "gttmp");
+	if(debug)
+		temp->dump();
+	return temp;
 }
 greater_eq_node::greater_eq_node(expr_node *left, expr_node *right): operator_node(left, right){
 }
+Value* greater_eq_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateICmp(CmpInst::ICMP_SGE, L, R, "gteqtmp");
+	if(debug)
+		temp->dump();
+	return temp;
+}
 equal_equal_node::equal_equal_node(expr_node *left, expr_node *right): operator_node(left, right){
+}
+Value* equal_equal_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateICmp(CmpInst::ICMP_EQ, L, R, "eqtmp");
+	if(debug)
+		temp->dump();
+	return temp;
 }
 not_equal_node::not_equal_node(expr_node *left, expr_node *right): operator_node(left, right){
 }
+Value* not_equal_node::Codegen(){
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+	Value *temp = Builder.CreateICmp(CmpInst::ICMP_NE, L, R, "neqtmp");
+	if(debug)
+		temp->dump();
+	return temp;
+}
 cond_and_node::cond_and_node(expr_node *left, expr_node *right): operator_node(left, right){
 }
+Value* cond_and_node::Codegen(){
+	return NULL;
+}
 cond_or_node::cond_or_node(expr_node *left, expr_node *right): operator_node(left, right){
+}
+Value* cond_or_node::Codegen(){
+	return NULL;
 }
 /**************************************************************/
 
@@ -287,6 +447,13 @@ void method_call_stmt::evaluate()
 	method_call->evaluate();
 	level--;
 }
+Value* method_call_stmt::Codegen()
+{
+    Value *temp = method_call->Codegen();
+    if(debug)
+        temp->dump();
+    return temp;
+}
 
 assignment_stmt::assignment_stmt(location_node *location, assign_op_node * assign_op, expr_node *expr)
 {
@@ -301,6 +468,12 @@ void assignment_stmt::evaluate()
 	cout << "assignment_stmt " << endl;	
 	level--;	
 	this->expr->evaluate();
+}
+Value* assignment_stmt::Codegen()
+{
+    // TODO : location and assign_op
+    Value *E = expr->Codegen();
+    return NULL;
 }
 
 if_stmt::if_stmt(expr_node *expr, block_node *block)
@@ -324,6 +497,10 @@ void if_stmt::evaluate()
 	cout << "IF Block" << endl;
 	block->evaluate();
 	level--;
+}
+Value* if_stmt::Codegen()
+{
+    return NULL;
 }
 
 if_else_stmt::if_else_stmt(expr_node *expr, block_node *if_block, block_node *else_block)
@@ -352,6 +529,10 @@ void if_else_stmt::evaluate()
 
 	level--;
 }
+Value* if_else_stmt::Codegen()
+{
+    return NULL;
+}
 
 for_stmt::for_stmt(string id, expr_node *init_expr, expr_node *term_expr, block_node *block){
 	this->id = id;
@@ -379,6 +560,10 @@ void for_stmt::evaluate()
 	block->evaluate();
 	level--;
 }
+Value* for_stmt::Codegen()
+{
+    return NULL;
+}
 
 return_stmt::return_stmt()
 {
@@ -392,6 +577,10 @@ void return_stmt::evaluate()
 	level++;
 	cout << "Return Statement " << endl;
 	level--;
+}
+Value* return_stmt::Codegen()
+{
+    return NULL;
 }
 
 return_expr_stmt::return_expr_stmt(expr_node *expr){
@@ -407,6 +596,10 @@ void return_expr_stmt::evaluate()
 	expr->evaluate();
 	level--;
 }
+Value* return_expr_stmt::Codegen()
+{
+    return NULL;
+}
 
 break_stmt::break_stmt()
 {
@@ -420,6 +613,10 @@ void break_stmt::evaluate()
 	level++;
 	cout << "Break Statement " << endl;
 	level--;
+}
+Value* break_stmt::Codegen()
+{
+    return NULL;
 }
 
 continue_stmt::continue_stmt()
@@ -435,6 +632,10 @@ void continue_stmt::evaluate()
 	cout << "Continue Statement " << endl;
 	level--;
 }
+Value* continue_stmt::Codegen()
+{
+    return NULL;
+}
 
 block_stmt::block_stmt(block_node *block)
 {
@@ -448,6 +649,19 @@ void block_stmt::evaluate()
 	cout << "Block Statement " << endl;
 	block->evaluate();
 	level--;
+
+	// block->Codegen();
+}
+Value* block_stmt::Codegen()
+{
+    Value *temp;
+    temp = block->Codegen();
+    if(debug)
+    {
+        printf("IN BLOCK STMT\n");
+        // temp->dump();
+    }
+    return temp;
 }
 /**************************************************************/
 
@@ -493,10 +707,37 @@ void method_call_by_id::evaluate()
 	for(list<expr_node*>::iterator it = param_list->begin(); it!=param_list->end(); ++it)
 		(*it)->evaluate();
 	level--;
+
+    // this->Codegen();
+}
+Value* method_call_by_id::Codegen()
+{
+    Function *CalleeF = TheModule->getFunction(id);
+    if (CalleeF == 0)
+        Error("Unknown function referenced");
+
+    // If argument mismatch error.
+    if (CalleeF->arg_size() != param_list->size())
+        Error("Incorrect # arguments passed");
+
+    std::vector<Value*> ArgsV;
+    Value *temp;
+    for (list<expr_node*>::iterator it=param_list->begin(); it!=param_list->end(); ++it) 
+    {
+        temp = (*it)->Codegen();
+        ArgsV.push_back(temp);
+        if (temp == 0) 
+            return 0;
+    }
+    temp = Builder.CreateCall(CalleeF, ArgsV, "calltmp");
+    if(debug)
+        temp->dump();
+    return temp;
 }
 method_call_by_callout::method_call_by_callout(string name, list<callout_arg_node*> *callout_args)
 {
-	this->name = name;
+    int len = name.length();
+	this->name = name.substr(1, len-2);
 	this->callout_args = callout_args;
 }
 /* COMPLETED */
@@ -508,6 +749,10 @@ void method_call_by_callout::evaluate()
 	for(list<callout_arg_node*>::iterator it = callout_args->begin(); it!=callout_args->end(); ++it)
 		(*it)->evaluate();
 	level--;
+}
+Value* method_call_by_callout::Codegen()
+{
+    return NULL;
 }
 
 /*************************************************************************/
@@ -533,6 +778,84 @@ void block_node::evaluate()
 
 	level--;
 }
+Value* block_node::Codegen()
+{
+    vector<AllocaInst *> OldBindings;
+    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+    map<string, bool> CurrentVars;
+
+    // Check for multiple declarations of variable.
+    for(list<var_decl_node*>::iterator it = var_list->begin(); it!=var_list->end(); ++it)
+    {
+        list<string> *ids = (*it)->id_list;
+        
+        for(list<string>::iterator it2 = ids->begin(); it2!=ids->end(); ++it2)
+        {
+            if(CurrentVars.find((*it2))!= CurrentVars.end())
+                // Variable declared more than once.
+                Error("Redeclaration of variable in block");
+            else
+                CurrentVars[*it2] = true;
+        }
+    }
+
+	// Put variable declarations in scope.
+	for(list<var_decl_node*>::iterator it = var_list->begin(); it!=var_list->end(); ++it)
+	{
+		list<string> *ids = (*it)->id_list;
+		
+		for(list<string>::iterator it2 = ids->begin(); it2!=ids->end(); ++it2)
+		{
+            AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, (*it2), (*it)->type);
+            Value *InitVal;            
+
+            if(((*it)->type == "int"))
+                InitVal = ConstantInt::get(getGlobalContext(), APInt(32, 0));
+            else if(((*it)->type == "boolean"))
+                InitVal = ConstantInt::get(getGlobalContext(), APInt(1, false));
+            Builder.CreateStore(InitVal, Alloca);
+
+            OldBindings.push_back(NamedValues[(*it2)]);
+
+            // Remember this binding.
+            NamedValues[(*it2)] = Alloca;
+		}
+	}
+    cout << "Before Local Var ";
+    for(map<string, AllocaInst*>::iterator it=NamedValues.begin(); it!=NamedValues.end(); ++it)
+    {
+     cout << (*it).first << " "; 
+    }
+    cout << endl;
+
+    // Execute the statements.
+    for(list<statement_node*>::iterator it = statement_list->begin(); it!=statement_list->end(); ++it)
+        (*it)->Codegen();
+
+    // Pop all our variables from scope.
+    int i=0;
+    for(list<var_decl_node*>::iterator it = var_list->begin(); it!=var_list->end(); ++it)
+    {
+        list<string> *ids = (*it)->id_list;
+        
+        for(list<string>::iterator it2 = ids->begin(); it2!=ids->end(); ++it2)
+        {
+            if(OldBindings[i] == NULL)
+                NamedValues.erase(*it2);
+            else 
+                NamedValues[(*it2)] = OldBindings[i];
+            i++;
+        }
+    }
+
+	// cout << "After Local Var ";
+	// for(map<string, AllocaInst*>::iterator it=NamedValues.begin(); it!=NamedValues.end(); ++it)
+	// {
+	// 	cout << (*it).first << " "; 
+	// }
+	// cout << endl;
+
+}
 
 argument_node::argument_node(string type, string id)
 {
@@ -547,6 +870,13 @@ void argument_node::evaluate()
 	level++;
 	cout << " TYPE " << type << " ID " << id ;
 	level--;
+}
+Type* argument_node::Codegen()
+{
+	if(type == "int")
+		return Type::getInt32Ty(getGlobalContext());
+	else if(type == "boolean")
+		return Type::getInt1Ty(getGlobalContext());
 }
 
 field_decl_id_simple::field_decl_id_simple(string id)
@@ -612,12 +942,106 @@ void method_decl_node::evaluate()
 	print_tabs(level-1);
 	cout << "Argument list ";
 	for (list<argument_node*>::iterator it=arg_list->begin(); it!=arg_list->end(); ++it)
-        (*it)->evaluate();
-    cout << endl;
-    
-    block->evaluate();
+		(*it)->evaluate();
+	cout << endl;
+	
+	block->evaluate();
 
 	level--;
+	// this->Codegen();
+}
+
+Function* method_decl_node::Codegen()
+{
+	vector<AllocaInst *> OldBindings;
+	// main function should be called with no arguments.
+	if(id == "main")
+	{
+		// argument list must be empty
+		if(arg_list->size()!=0)
+		{
+			Error("main function should have no arguments");
+			return 0;
+		}
+	}
+	Type *ret_type;
+	vector<Type*> args;
+
+	// Set the return type
+	if(type == "int")
+		ret_type = Type::getInt32Ty(getGlobalContext());
+	else if(type == "boolean")
+		ret_type = Type::getInt1Ty(getGlobalContext());
+	else if(type == "void")
+		ret_type = Type::getVoidTy(getGlobalContext());
+
+	// Construct the arguments.
+	for (list<argument_node*>::iterator it=arg_list->begin(); it!=arg_list->end(); ++it)
+		args.push_back((*it)->Codegen());
+
+	// Create the function definition.
+	FunctionType *FT = FunctionType::get(ret_type, args, false);
+	Function *F = Function::Create(FT, Function::ExternalLinkage, id, TheModule);
+
+	// If function already defined.
+	if (F->getName() != id){
+		Error("redefinition of function");
+		return 0;
+	}
+
+    // Create a new basic block to start insertion into.
+    BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "entry", F);
+    Builder.SetInsertPoint(BB);
+
+    list<argument_node*>::iterator it;
+    map<string, bool> CurrentVars;
+    // Check for multiple declarations of variable.
+    for(it=arg_list->begin(); it!=arg_list->end(); ++it)
+    {    
+        if(CurrentVars.find((*it)->id)!= CurrentVars.end())
+            // Variable declared more than once.
+            Error("Redeclaration of variable in function declaration");
+        else
+            CurrentVars[(*it)->id] = true;
+    
+    }
+  
+	// Add all arguments to the symbol table and create their allocas.
+	it=arg_list->begin();
+	for (Function::arg_iterator AI = F->arg_begin(); it != arg_list->end(); ++AI, ++it) 
+	{
+		AI->setName((*it)->id);
+        // Create an alloca for this variable.
+        AllocaInst *Alloca = CreateEntryBlockAlloca(F, (*it)->id, (*it)->type);
+
+        // Store the initial value into the alloca.
+        Builder.CreateStore(AI, Alloca);
+
+        // Remember the old variable binding so that we can restore the binding when we unrecurse.
+        OldBindings.push_back(NamedValues[(*it)->id]);
+
+        // Add arguments to variable symbol table.
+        NamedValues[(*it)->id] = Alloca;
+	}
+
+	
+	// TODO : See what to do with RetVal
+	Value* RetVal = block->Codegen();
+
+    int idx=0;
+    for (it=arg_list->begin(); it != arg_list->end(); ++it, idx++) 
+    {
+        // Restore old
+        if(OldBindings[idx] == NULL)
+            NamedValues.erase((*it)->id);
+        else 
+            NamedValues[(*it)->id] = OldBindings[idx];
+    }
+
+	if(debug)
+		F->dump();
+
+	return F;
 }
 
 program::program(list<field_decl_node*> *field_decl_list, list<method_decl_node*> *method_decl_list){
@@ -636,7 +1060,14 @@ void program::evaluate(){
 		(*it)->evaluate();
 
 	for (list<method_decl_node*>::iterator it=method_decl_list->begin(); it!=method_decl_list->end(); ++it)
-        (*it)->evaluate();
+		(*it)->evaluate();
 
 	level--;
+}
+void program::Codegen()
+{
+    for (list<method_decl_node*>::iterator it=method_decl_list->begin(); it!=method_decl_list->end(); ++it)
+        (*it)->Codegen();
+
+
 }

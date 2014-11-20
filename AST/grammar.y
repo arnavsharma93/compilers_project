@@ -20,11 +20,7 @@
   program* root;
   int line_num = 1;
 
-  static Module *TheModule;
-  static IRBuilder<> Builder(getGlobalContext());
-  static std::map<std::string, Value*> NamedValues;
-
-  Value *ErrorV(const char *Str) { printf("Error : %s\n", Str );; return 0; }
+  Module *TheModule;
   
 %}
 
@@ -131,12 +127,13 @@ program: CLASS PROGRAM '{' field_decl_star method_decl_star '}' {
                                                                     root = $$;
                                                                 }
 
+/* COMPLETED */
 method_decl_star: /*empty string */                             {$$ = new list<method_decl_node*>();}
                 | method_decl method_decl_star                  {
                                                                     $2->push_front($1);
                                                                     $$ = $2;
                                                                 }
-
+/* COMPLETED */
 method_decl: VOID IDENTIFIER '(' ')' block                              {
                                                                     list<argument_node*> *arg_list = new list<argument_node*>();
                                                                     $$ = new method_decl_node($1, $2, arg_list, $5);
@@ -159,6 +156,7 @@ method_decl: VOID IDENTIFIER '(' ')' block                              {
                                                                 }
            ;
 
+/* COMPLETED */
 comma_type_id: /* empty string */                               {$$ = new list<argument_node*>();}
              | ',' TYPE IDENTIFIER comma_type_id                        {
                                                                     argument_node* a = new argument_node($2, $3);
@@ -166,27 +164,32 @@ comma_type_id: /* empty string */                               {$$ = new list<a
                                                                     $$ = $4;
                                                                 }
 
+/* COMPLETED */
 block: '{' var_decl_star statement_star '}'                     {
                                                                     $$ = new block_node($2, $3);
                                                                 }
 
+/* COMPLETED */
 var_decl_star: /* empty string */                               {$$ = new list<var_decl_node*>();}
              | var_decl var_decl_star                           {
                                                                     $2->push_front($1);
                                                                     $$ = $2;
                                                                 }
 
-var_decl: TYPE IDENTIFIER comma_id ';'                                  {
+/* COMPLETED */
+var_decl: TYPE IDENTIFIER comma_id ';'                          {
                                                                     $3->push_front($2);
                                                                     $$ = new var_decl_node($1, $3);
                                                                 }
 
+/* COMPLETED */
 statement_star: /* empty string */                              {$$ = new list<statement_node*>();}
               | statement statement_star                        {
                                                                     $2->push_front($1);
                                                                     $$ = $2;
                                                                 }
 statement: location assign_op expr ';'                          {$$ = new assignment_stmt($1, $2, $3);}
+          /* DONE */
          | method_call ';'                                      {$$ = new method_call_stmt($1);}
          | IF '(' expr ')' block                                {$$ = new if_stmt($3, $5);}
          | IF '(' expr ')' block ELSE block                     {$$ = new if_else_stmt($3, $5, $7);}
@@ -206,34 +209,51 @@ assign_op: '='                                                  {$$ = new assign
 
 expr: location                                                  {$$ = new location_expr_node($1);}
     | method_call                                               {$$ = new method_call_expr_node($1);}
+    /* DONE */
     | literal                                                   {$$ = new literal_expr_node($1);}
+    /* DONE */
     | '(' expr ')'                                              {$$ = $2;}
+    /* DONE */
     | '!' expr %prec "not"                                      {$$ = new not_expr_node($2);}
+    /* DONE */
     | '-' expr %prec "negate"                                   {$$ = new negate_expr_node($2);}
-    | expr '*' expr                                             {$$ = new product_node($1, $3);}
+    /* DONE */
+    | expr '*' expr                                             {$$ = new product_node($1, $3);} 
+    /* DONE */
     | expr '/' expr                                             {$$ = new division_node($1, $3);}
+    /* DONE */
     | expr '%' expr                                             {$$ = new modulus_node($1, $3);}
+    /* DONE */
     | expr '+' expr                                             {$$ = new addition_node($1, $3);}
+    /* DONE */
     | expr '-' expr                                             {$$ = new subtraction_node($1, $3);}
+    /* DONE */
     | expr '<' expr                                             {$$ = new less_node($1, $3);}                                            
+    /* DONE */
     | expr LESSEQUAL expr                                       {$$ = new less_eq_node($1, $3);}
+    /* DONE */
     | expr GTEQUAL expr                                         {$$ = new greater_eq_node($1, $3);}   
+    /* DONE */
     | expr '>' expr                                             {$$ = new greater_node($1, $3);}
+    /* DONE */
     | expr EQEQUAL expr                                         {$$ = new equal_equal_node($1, $3);}
+    /* DONE */
     | expr NOTEQUAL expr                                        {$$ = new not_equal_node($1, $3);}
     | expr COND_AND expr                                        {$$ = new cond_and_node($1, $3);}
     | expr COND_OR expr                                         {$$ = new cond_or_node($1, $3);}
 
+/* COMPLETED */
 comma_expr: /* empty string */                                  {$$ = new list<expr_node*>();}
           | ',' expr comma_expr                                 {
                                                                     $3->push_front($2);
                                                                     $$ = $3;
                                                                 }
-method_call: IDENTIFIER '(' ')'                                                     {
+method_call: IDENTIFIER '(' ')'       /* DONE */                            {
                                                                                 $$ = new method_call_by_id($1, 
-                                                                                        new list<expr_node*>());
+                                                                                new list<expr_node*>());
                                                                             }
-          | IDENTIFIER '(' expr comma_expr ')'                                      {
+          /* DONE */
+          | IDENTIFIER '(' expr comma_expr ')'                              {
                                                                                 $4->push_front($3);
                                                                                 $$ = new method_call_by_id($1, $4);
                                                                             }
@@ -299,7 +319,6 @@ comma_id: /* empty string */                                        {$$ = new li
                                                                         $3->push_front($2);
                                                                         $$ = $3;
                                                                     }
-
 %%
 
 int main()
@@ -310,6 +329,7 @@ int main()
 
   yyparse();
   root->evaluate();
+  root->Codegen();
 
   // Print out all of the generated code.
   TheModule->dump();
