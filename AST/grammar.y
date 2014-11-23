@@ -208,6 +208,7 @@ assign_op: '='                                                  {$$ = new assign
          | MINUSEQUAL                                           {$$ = new assign_op_node(MINUSEQUAL);}
 
 expr: location                                                  {$$ = new location_expr_node($1);}
+    /* DONE */
     | method_call                                               {$$ = new method_call_expr_node($1);}
     /* DONE */
     | literal                                                   {$$ = new literal_expr_node($1);}

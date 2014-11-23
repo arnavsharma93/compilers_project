@@ -212,7 +212,10 @@ void method_call_expr_node::evaluate()
 
 Value* method_call_expr_node::Codegen()
 {
-	return NULL;
+	Value *temp = method_call->Codegen();
+	if(debug)
+		temp->dump();
+	return temp;
 }
 
 operator_node::operator_node(expr_node *left, expr_node *right)
