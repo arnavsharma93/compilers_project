@@ -85,14 +85,14 @@ class location_node{
 		string id;
 	public:
 		virtual void evaluate() = 0;
-		// virtual Value *Codegen() = 0;
+		virtual Value *Codegen() = 0;
 };
 
 class memory_loc : public location_node{
 	public:
 		memory_loc(string id);
 		void evaluate();
-		// virtual Value *Codegen();
+		virtual Value *Codegen();
 };
 
 class array_loc : public location_node{
@@ -101,7 +101,7 @@ class array_loc : public location_node{
 	public:
 		array_loc(string id, expr_node *expr);
 		void evaluate();
-		// virtual Value *Codegen();
+		virtual Value *Codegen();
 };
 /**************************************************************/
 

@@ -155,6 +155,10 @@ void array_loc::evaluate()
 
 	level--;
 }
+Value* array_loc::Codegen()
+{
+	return NULL;
+}
 
 memory_loc::memory_loc(string id)
 {
@@ -168,6 +172,19 @@ void memory_loc::evaluate()
 	level++;
 	cout << "memory_loc ID " << id << endl;
 	level--;
+}
+Value* memory_loc::Codegen()
+{
+	Value *V = NamedValues[id];
+	if (V == 0)
+		Error("Unknown variable name");
+
+	// Load the value.
+	Value *temp = Builder.CreateLoad(V, id);
+
+	if(debug)
+		temp->dump();
+	return temp;
 }
 /**************************************************************/
 
@@ -311,7 +328,9 @@ void location_expr_node::evaluate()
 }
 
 Value* location_expr_node::Codegen(){
-	return NULL;
+
+	Value *temp = location->Codegen();
+	return temp;
 }
 
 product_node::product_node(expr_node *left, expr_node *right): operator_node(left, right){
