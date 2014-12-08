@@ -231,44 +231,26 @@ assign_op: '='                                                  {$$ = new assign
 
          | MINUSEQUAL                                           {$$ = new assign_op_node(2);}
 
+/* COMPLETED */
 expr: location                                                  {$$ = new location_expr_node($1);}
-    /* DONE */
     | method_call                                               {$$ = new method_call_expr_node($1);}
-    /* DONE */
     | literal                                                   {$$ = new literal_expr_node($1);}
-    /* DONE */
     | '(' expr ')'                                              {$$ = $2;}
-    /* DONE */
     | '!' expr %prec "not"                                      {$$ = new not_expr_node($2);}
-    /* DONE */
     | '-' expr %prec "negate"                                   {$$ = new negate_expr_node($2);}
-    /* DONE */
     | expr '*' expr                                             {$$ = new product_node($1, $3);}
-    /* DONE */
     | expr '/' expr                                             {$$ = new division_node($1, $3);}
-    /* DONE */
     | expr '%' expr                                             {$$ = new modulus_node($1, $3);}
-    /* DONE */
     | expr '+' expr                                             {$$ = new addition_node($1, $3);}
-    /* DONE */
     | expr '-' expr                                             {$$ = new subtraction_node($1, $3);}
-    /* DONE */
     | expr '<' expr                                             {$$ = new less_node($1, $3);}
-    /* DONE */
     | expr LESSEQUAL expr                                       {$$ = new less_eq_node($1, $3);}
-    /* DONE */
     | expr GTEQUAL expr                                         {$$ = new greater_eq_node($1, $3);}
-    /* DONE */
     | expr '>' expr                                             {$$ = new greater_node($1, $3);}
-    /* DONE */
     | expr EQEQUAL expr                                         {$$ = new equal_equal_node($1, $3);}
-    /* DONE */
     | expr NOTEQUAL expr                                        {$$ = new not_equal_node($1, $3);}
-    // DONE
     | expr COND_AND expr                                        {$$ = new cond_and_node($1, $3);}
-    // DONE
     | expr COND_OR expr                                         {$$ = new cond_or_node($1, $3);}
-    // DONE
 
 /* COMPLETED */
 comma_expr: /* empty string */                                  {$$ = new list<expr_node*>();}
@@ -277,11 +259,11 @@ comma_expr: /* empty string */                                  {$$ = new list<e
                                                                     $$ = $3;
                                                                 }
 
-method_call: IDENTIFIER '(' ')'       /* DONE */                {
+/* COMPLETED */
+method_call: IDENTIFIER '(' ')'                                 {
                                                                     $$ = new method_call_by_id($1,
                                                                     new list<expr_node*>());
                                                                 }
-          /* DONE */
           | IDENTIFIER '(' expr comma_expr ')'                  {
                                                                     $4->push_front($3);
                                                                     $$ = new method_call_by_id($1, $4);
@@ -299,11 +281,13 @@ method_call: IDENTIFIER '(' ')'       /* DONE */                {
                                                                 }
 
 
+/* COMPLETED */
 callout_arg: expr                                               {$$ = new callout_arg_expr($1);}
 
            | STRING_LITERAL                                     {$$ = new callout_arg_string($1);}
 
 
+/* COMPLETED */
 comma_callout_arg: /* empty string */                           {$$ = new list<callout_arg_node*>();}
 
                  | ',' callout_arg comma_callout_arg            {
@@ -374,6 +358,7 @@ int main()
 
   // Print out all of the generated code.
   TheModule->dump();
+
 }
 
 void yyerror(char * s)

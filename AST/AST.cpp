@@ -11,7 +11,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include "AST.h"
 
-#define debug 1
+#define debug 0
 
 using namespace std;
 using namespace llvm;
@@ -889,9 +889,16 @@ void callout_arg_expr::evaluate()
 	expr->evaluate();
 	level--;
 }
+Value* callout_arg_expr::Codegen()
+{
+	Value *temp = expr->Codegen();
+
+	return temp;
+}
 callout_arg_string::callout_arg_string(string arg)
 {
-	this->arg = arg;
+	int len = arg.length();
+	this->arg = arg.substr(1, len-2);
 }
 
 /* COMPLETED */
@@ -901,6 +908,12 @@ void callout_arg_string::evaluate()
 	level++;
 	cout << "callout_arg using string " << arg << endl;
 	level--;
+}
+
+Value* callout_arg_string::Codegen()
+{
+	Value *temp = Builder.CreateGlobalStringPtr(arg);
+	return temp;
 }
 
 /********************** METHOD CALL Nodes *********************************/
@@ -963,7 +976,43 @@ void method_call_by_callout::evaluate()
 }
 Value* method_call_by_callout::Codegen()
 {
-    return NULL;
+	cout << "In callout" << endl;
+	cout << name << endl;
+
+	// Check if this function is in the module.
+	// If not, put it in the module with no body.
+	Function *CalleeF = TheModule->getFunction(name);
+    if (CalleeF == 0)
+    {
+	    Type *ret_type;
+		vector<Type*> args;
+		ret_type = Type::getInt32Ty(getGlobalContext());
+
+		// Create the function definition.
+		FunctionType *FT = FunctionType::get(ret_type, args, true);
+		Function *F = Function::Create(FT, GlobalValue::ExternalLinkage, name, TheModule);
+		if(debug)
+			F->dump();
+	}
+
+	// Get the function
+	CalleeF = TheModule->getFunction(name);
+
+	// Construct the arguments
+    std::vector<Value*> ArgsV;
+    Value *temp;
+    for (list<callout_arg_node*>::iterator it=callout_args->begin(); it!=callout_args->end(); ++it)
+    {
+        temp = (*it)->Codegen();
+        ArgsV.push_back(temp);
+        if (temp == 0)
+            return 0;
+    }
+    // Make the call instruction
+    temp = Builder.CreateCall(CalleeF, ArgsV, "calltmp");
+    if(debug)
+        temp->dump();
+    return temp;
 }
 
 /*************************************************************************/

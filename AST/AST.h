@@ -353,6 +353,7 @@ class block_stmt : public statement_node{
 class callout_arg_node{
 	public:
 		virtual void evaluate() = 0;
+		virtual Value* Codegen() = 0;
 };
 
 class callout_arg_expr : public callout_arg_node{
@@ -361,6 +362,7 @@ class callout_arg_expr : public callout_arg_node{
 	public:
 		callout_arg_expr(expr_node *expr);
 		void evaluate();
+		virtual Value* Codegen();
 };
 
 class callout_arg_string : public callout_arg_node{
@@ -369,6 +371,7 @@ class callout_arg_string : public callout_arg_node{
 	public:
 		callout_arg_string(string arg);
 		void evaluate();
+		virtual Value* Codegen();
 };
 
 /********************** METHOD CALL Nodes *********************************/
