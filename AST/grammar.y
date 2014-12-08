@@ -21,7 +21,7 @@
   int line_num = 1;
 
   Module *TheModule;
-  
+
 %}
 
 %union{
@@ -33,24 +33,24 @@
     method_decl_node* method_decl;
     list<method_decl_node*> *method_decl_list;
     list<argument_node*> *arg_list;
-    
+
     var_decl_node* var_decl;
     list<var_decl_node*> *var_decl_list;
-    
+
     list<string> *id_list;
     field_decl_id_node* field_decl_id;
     list<field_decl_id_node*> *field_decl_id_list;
-    
+
     field_decl_node *field_decl;
     list<field_decl_node*> *field_decl_list;
-    
+
     block_node* block;
     list<statement_node*> *statement_list;
     statement_node *statement;
-    
+
     location_node *location;
     assign_op_node *assign_op;
-    
+
     expr_node *expr;
     method_call_node* method_call;
     list<expr_node*> *expr_list;
@@ -134,7 +134,7 @@ method_decl_star: /*empty string */                             {$$ = new list<m
                                                                     $$ = $2;
                                                                 }
 /* COMPLETED */
-method_decl: VOID IDENTIFIER '(' ')' block                              {
+method_decl: VOID IDENTIFIER '(' ')' block                      {
                                                                     list<argument_node*> *arg_list = new list<argument_node*>();
                                                                     $$ = new method_decl_node($1, $2, arg_list, $5);
                                                                 }
@@ -147,7 +147,7 @@ method_decl: VOID IDENTIFIER '(' ')' block                              {
            | TYPE IDENTIFIER '(' TYPE IDENTIFIER comma_type_id ')' block        {
                                                                     argument_node* a = new argument_node($4, $5);
                                                                     $6->push_front(a);
-                                                                    
+
                                                                     $$ = new method_decl_node($1, $2, $6, $8);
                                                                 }
            | TYPE IDENTIFIER '(' ')' block                              {
@@ -198,7 +198,7 @@ statement: location assign_op expr ';'                          {$$ = new assign
          | RETURN expr ';'                                      {$$ = new return_expr_stmt($2);}
          | BREAK ';'                                            {$$ = new break_stmt();}
          | CONTINUE ';'                                         {$$ = new continue_stmt();}
-         | block                                                {$$ = new block_stmt($1);}                                        
+         | block                                                {$$ = new block_stmt($1);}
 
 location: IDENTIFIER                                                    {$$ = new memory_loc($1);}
         | IDENTIFIER '[' expr ']'                                       {$$ = new array_loc($1, $3);}
@@ -219,7 +219,7 @@ expr: location                                                  {$$ = new locati
     /* DONE */
     | '-' expr %prec "negate"                                   {$$ = new negate_expr_node($2);}
     /* DONE */
-    | expr '*' expr                                             {$$ = new product_node($1, $3);} 
+    | expr '*' expr                                             {$$ = new product_node($1, $3);}
     /* DONE */
     | expr '/' expr                                             {$$ = new division_node($1, $3);}
     /* DONE */
@@ -229,11 +229,11 @@ expr: location                                                  {$$ = new locati
     /* DONE */
     | expr '-' expr                                             {$$ = new subtraction_node($1, $3);}
     /* DONE */
-    | expr '<' expr                                             {$$ = new less_node($1, $3);}                                            
+    | expr '<' expr                                             {$$ = new less_node($1, $3);}
     /* DONE */
     | expr LESSEQUAL expr                                       {$$ = new less_eq_node($1, $3);}
     /* DONE */
-    | expr GTEQUAL expr                                         {$$ = new greater_eq_node($1, $3);}   
+    | expr GTEQUAL expr                                         {$$ = new greater_eq_node($1, $3);}
     /* DONE */
     | expr '>' expr                                             {$$ = new greater_node($1, $3);}
     /* DONE */
@@ -250,7 +250,7 @@ comma_expr: /* empty string */                                  {$$ = new list<e
                                                                     $$ = $3;
                                                                 }
 method_call: IDENTIFIER '(' ')'       /* DONE */                            {
-                                                                                $$ = new method_call_by_id($1, 
+                                                                                $$ = new method_call_by_id($1,
                                                                                 new list<expr_node*>());
                                                                             }
           /* DONE */
@@ -259,7 +259,7 @@ method_call: IDENTIFIER '(' ')'       /* DONE */                            {
                                                                                 $$ = new method_call_by_id($1, $4);
                                                                             }
           | CALLOUT '(' STRING_LITERAL ')'                                  {
-                                                                                $$ = new method_call_by_callout($3, 
+                                                                                $$ = new method_call_by_callout($3,
                                                                                     new list<callout_arg_node*>());
                                                                             }
           | CALLOUT '(' STRING_LITERAL ',' callout_arg comma_callout_arg ')'{
@@ -310,7 +310,7 @@ simple_or_array: IDENTIFIER                                                 {$$ 
 
 comma_simple_or_array: /* empty string */                           {$$ = new list<field_decl_id_node*>();}
                      | ',' simple_or_array comma_simple_or_array    {
-                                                                        $3->push_front($2); 
+                                                                        $3->push_front($2);
                                                                         $$ = $3;
                                                                     }
                      ;

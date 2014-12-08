@@ -10,7 +10,7 @@
 #include <list>
 #include "AST.h"
 
-#define debug 0
+#define debug 1
 
 using namespace std;
 using namespace llvm;
@@ -24,7 +24,7 @@ void *Error(const char *Str) { printf("Error : %s\n", Str );; exit(0); }
 
 /// CreateEntryBlockAlloca - Create an alloca instruction in the entry block of
 /// the function.  This is used for mutable variables etc.
-AllocaInst *CreateEntryBlockAlloca(Function *TheFunction, string VarName, string type) 
+AllocaInst *CreateEntryBlockAlloca(Function *TheFunction, string VarName, string type)
 {
     IRBuilder<> TmpB(&TheFunction->getEntryBlock(), TheFunction->getEntryBlock().begin());
     Type *T;
@@ -52,7 +52,7 @@ assign_op_node::assign_op_node(int op)
 void assign_op_node::evaluate()
 {
 	print_tabs(level);
-	
+
 	cout << "Assign_Op" << endl;
 }
 
@@ -247,13 +247,13 @@ void operator_node::evaluate()
 	print_tabs(level);
 	level++;
 	cout << "operator_node" << endl;
-	
+
 	print_tabs(level-1);
-	cout << "left expression" << endl;	
+	cout << "left expression" << endl;
 	left->evaluate();
 
 	print_tabs(level-1);
-	cout << "right expression" << endl;	
+	cout << "right expression" << endl;
 	right->evaluate();
 
 	level--;
@@ -280,6 +280,14 @@ void not_expr_node::evaluate()
 Value* not_expr_node::Codegen()
 {
 	Value *E = expr->Codegen();
+
+	int E_size = E->getType()->getIntegerBitWidth();
+
+	if(E_size != 1)
+	{
+		Error("Logical not defined on int");
+	}
+
 	Value *temp = Builder.CreateNot(E, "nottmp");
 	if(debug)
 		temp->dump();
@@ -338,6 +346,15 @@ product_node::product_node(expr_node *left, expr_node *right): operator_node(lef
 Value* product_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 1 || R_size == 1)
+	{
+		Error("Multiplication not defined on boolean");
+	}
+
 	Value *temp = Builder.CreateMul(L, R, "multmp");
 	if(debug)
 		temp->dump();
@@ -348,6 +365,15 @@ division_node::division_node(expr_node *left, expr_node *right): operator_node(l
 Value* division_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 1 || R_size == 1)
+	{
+		Error("Division not defined on boolean");
+	}
+
 	Value *temp = Builder.CreateSDiv(L, R, "divtmp");
 	if(debug)
 		temp->dump();
@@ -358,6 +384,15 @@ modulus_node::modulus_node(expr_node *left, expr_node *right): operator_node(lef
 Value* modulus_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 1 || R_size == 1)
+	{
+		Error("Modulo not defined on boolean");
+	}
+
 	Value *temp = Builder.CreateSRem(L, R, "modtmp");
 	if(debug)
 		temp->dump();
@@ -368,6 +403,15 @@ addition_node::addition_node(expr_node *left, expr_node *right): operator_node(l
 Value* addition_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 1 || R_size == 1)
+	{
+		Error("Addition not defined on boolean");
+	}
+
 	Value *temp = Builder.CreateAdd(L, R, "addtmp");
 	if(debug)
 		temp->dump();
@@ -378,6 +422,15 @@ subtraction_node::subtraction_node(expr_node *left, expr_node *right): operator_
 Value* subtraction_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 1 || R_size == 1)
+	{
+		Error("Subtraction not defined on boolean");
+	}
+
 	Value *temp = Builder.CreateSub(L, R, "subtmp");
 	if(debug)
 		temp->dump();
@@ -388,6 +441,15 @@ less_node::less_node(expr_node *left, expr_node *right): operator_node(left, rig
 Value* less_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 1 || R_size == 1)
+	{
+		Error("Less than not defined on boolean");
+	}
+
 	Value *temp = Builder.CreateICmp(CmpInst::ICMP_SLT, L, R, "lesstmp");
 	if(debug)
 		temp->dump();
@@ -398,16 +460,34 @@ less_eq_node::less_eq_node(expr_node *left, expr_node *right): operator_node(lef
 Value* less_eq_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 1 || R_size == 1)
+	{
+		Error("Less than equal to not defined on boolean");
+	}
+
 	Value *temp = Builder.CreateICmp(CmpInst::ICMP_SLE, L, R, "lesseqtmp");
 	if(debug)
 		temp->dump();
-	return temp;	
+	return temp;
 }
 greater_node::greater_node(expr_node *left, expr_node *right): operator_node(left, right){
 }
 Value* greater_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 1 || R_size == 1)
+	{
+		Error("Greater than not defined on boolean");
+	}
+
 	Value *temp = Builder.CreateICmp(CmpInst::ICMP_SGT, L, R, "gttmp");
 	if(debug)
 		temp->dump();
@@ -418,6 +498,15 @@ greater_eq_node::greater_eq_node(expr_node *left, expr_node *right): operator_no
 Value* greater_eq_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 1 || R_size == 1)
+	{
+		Error("Greater than equal to not defined on boolean");
+	}
+
 	Value *temp = Builder.CreateICmp(CmpInst::ICMP_SGE, L, R, "gteqtmp");
 	if(debug)
 		temp->dump();
@@ -428,6 +517,16 @@ equal_equal_node::equal_equal_node(expr_node *left, expr_node *right): operator_
 Value* equal_equal_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+
+	if(L_size != R_size)
+	{
+		Error("Datatypes not similar in equal to operator");
+	}
+
 	Value *temp = Builder.CreateICmp(CmpInst::ICMP_EQ, L, R, "eqtmp");
 	if(debug)
 		temp->dump();
@@ -438,6 +537,16 @@ not_equal_node::not_equal_node(expr_node *left, expr_node *right): operator_node
 Value* not_equal_node::Codegen(){
 	Value *L = left->Codegen();
 	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+
+	if(L_size != R_size)
+	{
+		Error("Datatypes not similar in not-equal to operator");
+	}
+
 	Value *temp = Builder.CreateICmp(CmpInst::ICMP_NE, L, R, "neqtmp");
 	if(debug)
 		temp->dump();
@@ -446,12 +555,42 @@ Value* not_equal_node::Codegen(){
 cond_and_node::cond_and_node(expr_node *left, expr_node *right): operator_node(left, right){
 }
 Value* cond_and_node::Codegen(){
-	return NULL;
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 32 || R_size == 32)
+	{
+		Error("Conditional operators not defined on int");
+	}
+
+	Value *temp = Builder.CreateAnd(L, R, "andtmp");
+	if(debug)
+		temp->dump();
+	return temp;
+
 }
 cond_or_node::cond_or_node(expr_node *left, expr_node *right): operator_node(left, right){
 }
 Value* cond_or_node::Codegen(){
-	return NULL;
+	Value *L = left->Codegen();
+	Value *R = right->Codegen();
+
+	int L_size = L->getType()->getIntegerBitWidth();
+	int R_size = R->getType()->getIntegerBitWidth();
+
+	if(L_size == 32 || R_size == 32)
+	{
+		Error("Conditional operators not defined on int");
+	}
+	Value *temp = Builder.CreateOr(L, R, "ortmp");
+
+	if(debug)
+		temp->dump();
+	return temp;
+
 }
 /**************************************************************/
 
@@ -487,8 +626,8 @@ void assignment_stmt::evaluate()
 {
 	print_tabs(level);
 	level++;
-	cout << "assignment_stmt " << endl;	
-	level--;	
+	cout << "assignment_stmt " << endl;
+	level--;
 	this->expr->evaluate();
 }
 Value* assignment_stmt::Codegen()
@@ -570,7 +709,7 @@ void for_stmt::evaluate()
 	print_tabs(level);
 	level++;
 	cout << "FOR Statement " << endl;
-	
+
 	print_tabs(level-1);
 	cout << "init_expr" << endl;
 	init_expr->evaluate();
@@ -744,11 +883,11 @@ Value* method_call_by_id::Codegen()
 
     std::vector<Value*> ArgsV;
     Value *temp;
-    for (list<expr_node*>::iterator it=param_list->begin(); it!=param_list->end(); ++it) 
+    for (list<expr_node*>::iterator it=param_list->begin(); it!=param_list->end(); ++it)
     {
         temp = (*it)->Codegen();
         ArgsV.push_back(temp);
-        if (temp == 0) 
+        if (temp == 0)
             return 0;
     }
     temp = Builder.CreateCall(CalleeF, ArgsV, "calltmp");
@@ -810,7 +949,7 @@ Value* block_node::Codegen()
     for(list<var_decl_node*>::iterator it = var_list->begin(); it!=var_list->end(); ++it)
     {
         list<string> *ids = (*it)->id_list;
-        
+
         for(list<string>::iterator it2 = ids->begin(); it2!=ids->end(); ++it2)
         {
             if(CurrentVars.find((*it2))!= CurrentVars.end())
@@ -825,11 +964,11 @@ Value* block_node::Codegen()
 	for(list<var_decl_node*>::iterator it = var_list->begin(); it!=var_list->end(); ++it)
 	{
 		list<string> *ids = (*it)->id_list;
-		
+
 		for(list<string>::iterator it2 = ids->begin(); it2!=ids->end(); ++it2)
 		{
             AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, (*it2), (*it)->type);
-            Value *InitVal;            
+            Value *InitVal;
 
             if(((*it)->type == "int"))
                 InitVal = ConstantInt::get(getGlobalContext(), APInt(32, 0));
@@ -846,7 +985,7 @@ Value* block_node::Codegen()
     cout << "Before Local Var ";
     for(map<string, AllocaInst*>::iterator it=NamedValues.begin(); it!=NamedValues.end(); ++it)
     {
-     cout << (*it).first << " "; 
+     cout << (*it).first << " ";
     }
     cout << endl;
 
@@ -859,12 +998,12 @@ Value* block_node::Codegen()
     for(list<var_decl_node*>::iterator it = var_list->begin(); it!=var_list->end(); ++it)
     {
         list<string> *ids = (*it)->id_list;
-        
+
         for(list<string>::iterator it2 = ids->begin(); it2!=ids->end(); ++it2)
         {
             if(OldBindings[i] == NULL)
                 NamedValues.erase(*it2);
-            else 
+            else
                 NamedValues[(*it2)] = OldBindings[i];
             i++;
         }
@@ -873,7 +1012,7 @@ Value* block_node::Codegen()
 	// cout << "After Local Var ";
 	// for(map<string, AllocaInst*>::iterator it=NamedValues.begin(); it!=NamedValues.end(); ++it)
 	// {
-	// 	cout << (*it).first << " "; 
+	// 	cout << (*it).first << " ";
 	// }
 	// cout << endl;
 
@@ -966,7 +1105,7 @@ void method_decl_node::evaluate()
 	for (list<argument_node*>::iterator it=arg_list->begin(); it!=arg_list->end(); ++it)
 		(*it)->evaluate();
 	cout << endl;
-	
+
 	block->evaluate();
 
 	level--;
@@ -1019,18 +1158,18 @@ Function* method_decl_node::Codegen()
     map<string, bool> CurrentVars;
     // Check for multiple declarations of variable.
     for(it=arg_list->begin(); it!=arg_list->end(); ++it)
-    {    
+    {
         if(CurrentVars.find((*it)->id)!= CurrentVars.end())
             // Variable declared more than once.
             Error("Redeclaration of variable in function declaration");
         else
             CurrentVars[(*it)->id] = true;
-    
+
     }
-  
+
 	// Add all arguments to the symbol table and create their allocas.
 	it=arg_list->begin();
-	for (Function::arg_iterator AI = F->arg_begin(); it != arg_list->end(); ++AI, ++it) 
+	for (Function::arg_iterator AI = F->arg_begin(); it != arg_list->end(); ++AI, ++it)
 	{
 		AI->setName((*it)->id);
         // Create an alloca for this variable.
@@ -1046,17 +1185,17 @@ Function* method_decl_node::Codegen()
         NamedValues[(*it)->id] = Alloca;
 	}
 
-	
+
 	// TODO : See what to do with RetVal
 	Value* RetVal = block->Codegen();
 
     int idx=0;
-    for (it=arg_list->begin(); it != arg_list->end(); ++it, idx++) 
+    for (it=arg_list->begin(); it != arg_list->end(); ++it, idx++)
     {
         // Restore old
         if(OldBindings[idx] == NULL)
             NamedValues.erase((*it)->id);
-        else 
+        else
             NamedValues[(*it)->id] = OldBindings[idx];
     }
 
@@ -1067,7 +1206,7 @@ Function* method_decl_node::Codegen()
 }
 
 program::program(list<field_decl_node*> *field_decl_list, list<method_decl_node*> *method_decl_list){
-	
+
 	this->method_decl_list = method_decl_list;
 	this->field_decl_list = field_decl_list;
 }
