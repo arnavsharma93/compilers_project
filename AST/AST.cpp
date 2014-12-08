@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <llvm/Support/raw_ostream.h>
 #include "AST.h"
 
 #define debug 1
@@ -636,14 +637,13 @@ Value* assignment_stmt::Codegen()
 
     string id = this->location->id;
 
-	Value *V = NamedValues[id];
-	if (V == 0)
+	Value *V_name = NamedValues[id];
+	if (V_name == 0)
 		Error("Unknown variable name");
 
-	Value *temp = Builder.CreateLoad(V, id);
+	Value *V_value = Builder.CreateLoad(V_name, id);
 
-
-	int V_size = temp->getType()->getIntegerBitWidth();
+	int V_size = V_value->getType()->getIntegerBitWidth();
 	int E_size = E->getType()->getIntegerBitWidth();
 
 	if(V_size != E_size)
@@ -651,7 +651,40 @@ Value* assignment_stmt::Codegen()
 		Error("Datatypes of LHS and RHS not same");
 	}
 
-    return NULL;
+
+	if(this->assign_op->op == 0)
+	{
+		Builder.CreateStore(E, V_name);
+		if(debug)
+		{
+			V_name->dump();
+		}
+
+		return E;
+	}
+	else if(this->assign_op->op == 1)
+	{
+		Value *V_new_value = Builder.CreateAdd(V_value, E, "addtmp");
+		Builder.CreateStore(V_new_value, V_name);
+		if(debug)
+		{
+			// int type_int=0;
+			// llvm::raw_string_ostream rso(&type_int);
+			// cout << "printing assignment op value" << endl;
+			// V_new_value->print(rso);
+
+			V_new_value->dump();
+		}
+		return V_new_value;
+	}
+	else
+	{
+		Value *V_new_value = Builder.CreateSub(V_value, E, "subtmp");
+		Builder.CreateStore(V_new_value, V_name);
+		if(debug)
+			V_new_value->dump();
+		return V_new_value;
+	}
 }
 
 if_stmt::if_stmt(expr_node *expr, block_node *block)

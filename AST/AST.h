@@ -13,9 +13,8 @@ using namespace std;
 using namespace llvm;
 
 class assign_op_node{
-	protected:
-		int op;
 	public:
+		int op;
 		assign_op_node(int op);
 		void evaluate();
 		// virtual Value *Codegen() = 0;

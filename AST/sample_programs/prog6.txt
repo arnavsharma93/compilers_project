@@ -5,9 +5,11 @@ class Program{
 	int func2(){}
 	boolean func3(){}
 
-	void func4(int a, boolean aa, boolean b){
+	void func4(int a){
         int b,c;
-        a = b + c;
+        c = 10;
+        b = 5;
+        a -= b;
     }
 
 }
