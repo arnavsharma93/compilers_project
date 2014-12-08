@@ -81,9 +81,8 @@ class bool_literal_node : public literal_node{
 
 /*********************** Location Nodes ************************/
 class location_node{
-	protected:
-		string id;
 	public:
+		string id;
 		virtual void evaluate() = 0;
 		virtual Value *Codegen() = 0;
 };
@@ -260,7 +259,7 @@ class block_node{
 };
 
 class method_call_stmt : public statement_node{
-	protected: 
+	protected:
 		method_call_node* method_call;
 	public:
 		method_call_stmt(method_call_node* method_call);
@@ -448,7 +447,7 @@ class method_decl_node{
 	public:
 		method_decl_node(string type, string id, list<argument_node*> *arg_list, block_node* block);
 		void evaluate();
-		Function *Codegen(); 
+		Function *Codegen();
 
 };
 

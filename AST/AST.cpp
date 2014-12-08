@@ -632,8 +632,25 @@ void assignment_stmt::evaluate()
 }
 Value* assignment_stmt::Codegen()
 {
-    // TODO : location and assign_op
     Value *E = expr->Codegen();
+
+    string id = this->location->id;
+
+	Value *V = NamedValues[id];
+	if (V == 0)
+		Error("Unknown variable name");
+
+	Value *temp = Builder.CreateLoad(V, id);
+
+
+	int V_size = temp->getType()->getIntegerBitWidth();
+	int E_size = E->getType()->getIntegerBitWidth();
+
+	if(V_size != E_size)
+	{
+		Error("Datatypes of LHS and RHS not same");
+	}
+
     return NULL;
 }
 

@@ -6,9 +6,8 @@ class Program{
 	boolean func3(){}
 
 	void func4(int a, boolean aa, boolean b){
-        aa = aa && b;
-        aa = aa || b;
-        aa = a || b;
+        int b,c;
+        a = b + c;
     }
 
 }
