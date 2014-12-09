@@ -21,6 +21,8 @@ static map<string, AllocaInst*> NamedValues;
 static map<string, GlobalVariable*> GlobalVars;
 extern Module *TheModule;
 
+BasicBlock *ForAfterBB;
+
 Value *ErrorV(const char *Str) { printf("Error : %s\n", Str );; exit(0); }
 void *Error(const char *Str) { printf("Error : %s\n", Str );; exit(0); }
 
@@ -748,7 +750,7 @@ Value* if_stmt::Codegen()
 	// create BB for the Then block and insert it at the end of the current function
 	BasicBlock *ThenBB = BasicBlock::Create(getGlobalContext(), "then", TheFunction);
 
-	// BB for Else block - empty
+	// BB for Else block
 	BasicBlock *ElseBB = BasicBlock::Create(getGlobalContext(), "else");
 	// BB for merge
 	BasicBlock *MergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
@@ -770,10 +772,13 @@ Value* if_stmt::Codegen()
 	ThenBB = Builder.GetInsertBlock();
 
 
-	// Codegen of empty else block
+	// Codegen of else block
 	TheFunction->getBasicBlockList().push_back(ElseBB);
 	Builder.SetInsertPoint(ElseBB);
 
+	// block codegen not working
+	Value *ElseV = 0;
+	// if (ElseV == 0) return 0;
 	Builder.CreateBr(MergeBB);
 	// Codegen of 'Else' can change the current block, update ElseBB for the PHI.
 	ElseBB = Builder.GetInsertBlock();
@@ -781,8 +786,7 @@ Value* if_stmt::Codegen()
 	// Emit merge block
 	TheFunction->getBasicBlockList().push_back(MergeBB);
 	Builder.SetInsertPoint(MergeBB);
-
-	return ThenV;
+	return Constant::getNullValue(Type::getInt32Ty(getGlobalContext()));	
 }
 
 if_else_stmt::if_else_stmt(expr_node *expr, block_node *then_block, block_node *else_block)
@@ -861,13 +865,7 @@ Value* if_else_stmt::Codegen()
 	// Emit merge block
 	TheFunction->getBasicBlockList().push_back(MergeBB);
 	Builder.SetInsertPoint(MergeBB);
-	PHINode *PN = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2,
-                                  "iftmp");
-
-
-	PN->addIncoming(ThenV, ThenBB);
-	PN->addIncoming(ElseV, ElseBB);
-	return PN;
+	return Constant::getNullValue(Type::getInt32Ty(getGlobalContext()));
 }
 
 while_stmt::while_stmt(expr_node *expr, block_node *block){
@@ -1008,6 +1006,7 @@ Value* for_stmt::Codegen()
 
     // Create the "after loop" block and insert it.
     BasicBlock *AfterBB = BasicBlock::Create(getGlobalContext(), "afterloop", TheFunction);
+    ForAfterBB = AfterBB;
 
     Value *init_Val = Builder.CreateLoad(Alloca, id.c_str());
     Value *EndCond = Builder.CreateICmp(CmpInst::ICMP_SLT, init_Val, term, "lesstmp");
@@ -1126,14 +1125,8 @@ Value* break_stmt::Codegen()
 {
 	cout << "Break Statement " << endl;
 
-	Function *F = Builder.GetInsertBlock()->getParent();
-	iplist<BasicBlock>::iterator iter;
-	for (iter = F->getBasicBlockList().begin(); iter != F->getBasicBlockList().end(); iter++)
-    {
-      BasicBlock* currBB = iter;
-      // cout << "BasicBlock: "  << currBB->getName() << "\n";   
-    }
-    return NULL;
+	Value *temp = Builder.CreateBr(ForAfterBB);
+    return temp;
 }
 
 continue_stmt::continue_stmt()

@@ -1,0 +1,43 @@
+class Program{
+	int a[100];
+
+	int main()
+	{
+		int i, j, temp, N;
+
+		N =100;
+		for i=0, N
+		{
+			a[i] = (callout("rand") %1000);
+		}
+
+		callout("puts", "Original array");
+		for i=0, N
+		{
+			callout("printf", "%d ", a[i]);
+		}
+		callout("puts", "");
+
+		for i=0, N
+		{
+			for j=i+1, N
+			{
+				if(a[j] < a[i])
+				{
+					temp = a[i];
+					a[i] = a[j];
+					a[j] = temp;
+				}
+			}
+		}
+
+		callout("puts", "Sorted array");
+		for i=0, N
+		{
+			callout("printf", "%d ", a[i]);
+		}
+		callout("puts", "");
+		return 0;
+	}
+
+}
