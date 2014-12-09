@@ -926,18 +926,106 @@ void for_stmt::evaluate()
 }
 Value* for_stmt::Codegen()
 {
- //    Value* init = init_expr->Codegen();
- //    Value* term = term_expr->Codegen();
+   	Value* init = init_expr->Codegen();
+    if(init == 0)
+    {
+        return 0;
+    }
 
- //    int init_size = init_expr->getType()->getIntegerBitWidth();
-	// int term_size = term_expr->getType()->getIntegerBitWidth();
+    Value* term = term_expr->Codegen();
+    if(term == 0)
+    {
+        return 0;
+    }
 
-	// if(init_size != 32 || term_size != 32)
-	// {
-	// 	Error("Expressions do not evaluate to int");
-	// }
-	return NULL;
+    int init_size = init->getType()->getIntegerBitWidth();
+    int term_size = term->getType()->getIntegerBitWidth();
 
+    if(init_size != 32 || term_size != 32)
+    {
+        Error("Expressions do not evaluate to int");
+    }
+
+
+    // Make the new basic block for the loop header, inserting after current
+    // block.
+    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+
+
+    Value* id_value = Builder.CreateLoad(NamedValues[id], id.c_str());
+
+    int id_size = id_value->getType()->getIntegerBitWidth();
+
+    string id_type;
+
+    if(id_size == 1)
+    {
+        id_type = "boolean";
+    }
+    else if(id_size == 32)
+    {
+        id_type = "int";
+    }
+    else if(id_size == 8)
+    {
+        id_type = "char";
+    }
+
+
+    AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, id, id_type);
+
+     // Store the value into the alloca.
+    Builder.CreateStore(init, Alloca);
+
+    BasicBlock *LoopBB = BasicBlock::Create(getGlobalContext(), "loop", TheFunction);
+
+    // Insert an explicit fall through from the current block to the LoopBB.
+    Builder.CreateBr(LoopBB);
+
+    // Start insertion in LoopBB.
+    Builder.SetInsertPoint(LoopBB);
+
+
+    // Within the loop, the variable is defined equal to the PHI node.  If it
+    // shadows an existing variable, we have to restore it, so save it now.
+    AllocaInst *OldVal = NamedValues[id];
+
+    NamedValues[id] = Alloca;
+
+    if (block->Codegen() == 0)
+      return 0;
+
+    Value *StepVal = ConstantInt::get(getGlobalContext(), APInt(32, 1));
+    Value *CurVar = Builder.CreateLoad(Alloca, id.c_str());
+    Value *NextVar = Builder.CreateAdd(CurVar, StepVal, "nextvar");
+
+    Builder.CreateStore(NextVar, Alloca);
+
+
+    Value *EndCond = Builder.CreateICmp(CmpInst::ICMP_SLT, NextVar, term, "lesstmp");
+
+    if(debug)
+    {
+        cout << "dumping value of EndCond" << endl;
+        EndCond->dump();
+    }
+
+    // Create the "after loop" block and insert it.
+    BasicBlock *AfterBB = BasicBlock::Create(getGlobalContext(), "afterloop", TheFunction);
+
+    Builder.CreateCondBr(EndCond, LoopBB, AfterBB);
+
+    Builder.SetInsertPoint(AfterBB);
+
+    // Restore the unshadowed variable.
+    if (OldVal)
+        NamedValues[id] = OldVal;
+    else
+        NamedValues.erase(id);
+
+
+    // for expr always returns 0.0
+    return Constant::getNullValue(Type::getInt32Ty(getGlobalContext()));
 
 }
 
