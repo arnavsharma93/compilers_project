@@ -926,16 +926,17 @@ void for_stmt::evaluate()
 }
 Value* for_stmt::Codegen()
 {
-    Value* init = init_expr->Codegen();
-    Value* term = term_expr->Codegen();
+ //    Value* init = init_expr->Codegen();
+ //    Value* term = term_expr->Codegen();
 
-    int init_size = init_expr->getType()->getIntegerBitWidth();
-	int term_size = term_expr->getType()->getIntegerBitWidth();
+ //    int init_size = init_expr->getType()->getIntegerBitWidth();
+	// int term_size = term_expr->getType()->getIntegerBitWidth();
 
-	if(init_size != 32 || term_size != 32)
-	{
-		Error("Expressions do not evaluate to int");
-	}
+	// if(init_size != 32 || term_size != 32)
+	// {
+	// 	Error("Expressions do not evaluate to int");
+	// }
+	return NULL;
 
 
 }
@@ -955,6 +956,13 @@ void return_stmt::evaluate()
 }
 Value* return_stmt::Codegen()
 {
+	BasicBlock* current_block = Builder.GetInsertBlock();
+
+	Type *functionReturn = Builder.getCurrentFunctionReturnType();
+	if(!functionReturn->isVoidTy())
+		Error("Returning nothing from a non-void function");
+
+	ReturnInst* retInst = ReturnInst::Create(getGlobalContext(), current_block);
     return NULL;
 }
 
@@ -973,7 +981,17 @@ void return_expr_stmt::evaluate()
 }
 Value* return_expr_stmt::Codegen()
 {
-    return NULL;
+	Value *E = expr->Codegen();
+	BasicBlock* current_block = Builder.GetInsertBlock();
+
+	Type *functionReturn = Builder.getCurrentFunctionReturnType();
+	if(E->getType() != functionReturn)
+		Error("Return type not same as in method declaration");
+
+	ReturnInst* retInst = ReturnInst::Create(getGlobalContext(), E, current_block);
+
+	// TODO : Return what?
+    return E;
 }
 
 break_stmt::break_stmt()
@@ -1140,9 +1158,6 @@ void method_call_by_callout::evaluate()
 }
 Value* method_call_by_callout::Codegen()
 {
-	cout << "In callout" << endl;
-	cout << name << endl;
-
 	// Check if this function is in the module.
 	// If not, put it in the module with no body.
 	Function *CalleeF = TheModule->getFunction(name);
@@ -1245,12 +1260,14 @@ Value* block_node::Codegen()
             NamedValues[(*it2)] = Alloca;
 		}
 	}
-    cout << "Before Local Var ";
-    for(map<string, AllocaInst*>::iterator it=NamedValues.begin(); it!=NamedValues.end(); ++it)
-    {
-     cout << (*it).first << " ";
-    }
-    cout << endl;
+	if(debug){
+	    cout << "Before Local Var ";
+	    for(map<string, AllocaInst*>::iterator it=NamedValues.begin(); it!=NamedValues.end(); ++it)
+	    {
+	     cout << (*it).first << " ";
+	    }
+	    cout << endl;
+	}
 
     Value* temp;
     // Execute the statements.

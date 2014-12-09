@@ -123,7 +123,6 @@
 
 
 program: CLASS PROGRAM '{' field_decl_star method_decl_star '}' {
-                                                                    printf("In program rule\n");
                                                                     $$ = new program($4, $5);
                                                                     root = $$;
                                                                 }
@@ -173,7 +172,8 @@ comma_type_id: /* empty string */                               {$$ = new list<a
                                                                 }
 
 /* COMPLETED */
-block: '{' var_decl_star statement_star '}'                     {                                                                    $$ = new block_node($2, $3);
+block: '{' var_decl_star statement_star '}'                     {
+                                                                    $$ = new block_node($2, $3);
                                                                 }
 
 
@@ -213,15 +213,15 @@ statement: location assign_op expr ';'                          {$$ = new assign
          | WHILE '(' expr ')' block                             {$$ = new while_stmt($3, $5);}
 
          | WHILE '(' expr ')' ':' INT_LITERAL block             {$$ = new while_bound_stmt($3, $6, $7);}
-
+         /* DONE */
          | RETURN ';'                                           {$$ = new return_stmt();}
-
+         /* DONE */
          | RETURN expr ';'                                      {$$ = new return_expr_stmt($2);}
 
          | BREAK ';'                                            {$$ = new break_stmt();}
 
          | CONTINUE ';'                                         {$$ = new continue_stmt();}
-
+         /* DONE */
          | block                                                {$$ = new block_stmt($1);}
 
 // COMPLETED
@@ -358,7 +358,7 @@ int main()
   TheModule = new Module("Decaf Compiler", Context);
 
   yyparse();
-  root->evaluate();
+  // root->evaluate();
   root->Codegen();
 
   // Print out all of the generated code.
