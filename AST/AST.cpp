@@ -801,15 +801,15 @@ Value* if_else_stmt::Codegen()
 	// Emit merge block
 	TheFunction->getBasicBlockList().push_back(MergeBB);
 	Builder.SetInsertPoint(MergeBB);
-	PHINode *PN = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2,
+	PHINode *PN = Builder.CreatePHI(Type::getVoidTy(getGlobalContext()), 2,
                                   "iftmp");
 
-	int pn_size = PN->getType()->getIntegerBitWidth();
+	// int pn_size = PN->getType()->getIntegerBitWidth();
 
-	printf("%d\n", pn_size);
+	// printf("%d\n", pn_size);
 
-	// PN->addIncoming(ThenV, ThenBB);
-	// PN->addIncoming(ElseV, ElseBB);
+	PN->addIncoming(ThenV, ThenBB);
+	PN->addIncoming(ElseV, ElseBB);
 	return PN;
 }
 
@@ -1175,6 +1175,7 @@ Value* block_node::Codegen()
             i++;
         }
     }
+
 
 	// cout << "After Local Var ";
 	// for(map<string, AllocaInst*>::iterator it=NamedValues.begin(); it!=NamedValues.end(); ++it)
