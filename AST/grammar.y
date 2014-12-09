@@ -207,7 +207,7 @@ statement: location assign_op expr ';'                          {$$ = new assign
          | IF '(' expr ')' block                                {$$ = new if_stmt($3, $5);}
          // DONE
          | IF '(' expr ')' block ELSE block                     {$$ = new if_else_stmt($3, $5, $7);}
-
+         /* DONE */
          | FOR IDENTIFIER '=' expr ',' expr block               {$$ = new for_stmt($2, $4, $6, $7);}
 
          | WHILE '(' expr ')' block                             {$$ = new while_stmt($3, $5);}
@@ -309,14 +309,7 @@ literal: INT_LITERAL                                            {$$ = new int_li
        | BOOL_LITERAL                                           {$$ = new bool_literal_node($1);}
 
 
-/*
-bin_op: arith_op | rel_op | eq_op | cond_op;
-arith_op: '+' | '-' | '*' | '/' | '%';
-rel_op: '<' | '>' | LESSEQUAL | GTEQUAL;
-eq_op: NOTEQUAL | EQEQUAL;
-cond_op: COND_OP;
-*/
-
+/* COMPLETED */
 field_decl_star: /* empty string */ %prec "empty"               {$$ = new list<field_decl_node*>();}
 
                | field_decl_star field_decl                     {
@@ -324,16 +317,19 @@ field_decl_star: /* empty string */ %prec "empty"               {$$ = new list<f
                                                                     $$ = $1;
                                                                 }
 
+/* COMPLETED */
 field_decl: TYPE simple_or_array comma_simple_or_array';'       {
                                                                     $3->push_front($2);
                                                                     $$ = new field_decl_node($1, $3);
                                                                 }
 
+/* COMPLETED */
 simple_or_array: IDENTIFIER                                     {$$ = new field_decl_id_simple($1);}
 
                | IDENTIFIER '[' INT_LITERAL ']'                 {$$ = new field_decl_id_array($1, $3);}
                ;
 
+/* COMPLETED */
 comma_simple_or_array: /* empty string */                       {$$ = new list<field_decl_id_node*>();}
 
                      | ',' simple_or_array comma_simple_or_array
@@ -343,6 +339,7 @@ comma_simple_or_array: /* empty string */                       {$$ = new list<f
                                                                 }
                      ;
 
+/* COMPLETED */
 comma_id: /* empty string */                                    {$$ = new list<string>();}
 
         | ',' IDENTIFIER comma_id                               {

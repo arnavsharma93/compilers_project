@@ -434,6 +434,7 @@ class argument_node{
 class field_decl_id_node{
 	public:
 		virtual void evaluate() = 0;
+		virtual Value* Codegen(string type) = 0;
 };
 
 class field_decl_id_simple : public field_decl_id_node{
@@ -442,6 +443,7 @@ class field_decl_id_simple : public field_decl_id_node{
 	public:
 		field_decl_id_simple(string id);
 		void evaluate();
+		Value* Codegen(string type);
 };
 
 class field_decl_id_array : public field_decl_id_node{
@@ -451,6 +453,7 @@ class field_decl_id_array : public field_decl_id_node{
 	public:
 		field_decl_id_array(string id, int int_literal);
 		void evaluate();
+		Value* Codegen(string type);
 };
 
 class field_decl_node{
@@ -460,6 +463,7 @@ class field_decl_node{
 	public:
 		field_decl_node(string type, list<field_decl_id_node*> *field_decl_id_list);
 		void evaluate();
+		Value* Codegen();
 
 };
 

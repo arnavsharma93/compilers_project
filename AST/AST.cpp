@@ -18,6 +18,7 @@ using namespace llvm;
 
 static IRBuilder<> Builder(getGlobalContext());
 static map<string, AllocaInst*> NamedValues;
+static map<string, GlobalVariable*> GlobalVars;
 extern Module *TheModule;
 
 Value *ErrorV(const char *Str) { printf("Error : %s\n", Str );; exit(0); }
@@ -158,7 +159,22 @@ void array_loc::evaluate()
 }
 Value* array_loc::Codegen()
 {
-	return NULL;
+	if(GlobalVars[id] == 0)
+	{
+		Error("Array global variable undefined");
+	}
+	Value *temp;
+	Value *E = expr->Codegen();
+
+	vector<Value *> tmp_args;
+	tmp_args.push_back(Builder.getInt32(0));
+	tmp_args.push_back(E);
+	temp = Builder.CreateInBoundsGEP(GlobalVars[id], tmp_args, "gep");
+
+	// Load the value.
+	temp = Builder.CreateLoad(temp, id);
+
+	return temp;
 }
 
 memory_loc::memory_loc(string id)
@@ -176,9 +192,20 @@ void memory_loc::evaluate()
 }
 Value* memory_loc::Codegen()
 {
+	cout << "In memory loc codegen" << endl;
 	Value *V = NamedValues[id];
 	if (V == 0)
-		Error("Unknown variable name");
+	{
+		// Not in local variables
+		if(GlobalVars[id] == 0)
+		{
+			Error("Unknown variable name");
+		}
+		else
+		{
+			V = GlobalVars[id];
+		}
+	}
 
 	// Load the value.
 	Value *temp = Builder.CreateLoad(V, id);
@@ -339,6 +366,7 @@ void location_expr_node::evaluate()
 Value* location_expr_node::Codegen(){
 
 	Value *temp = location->Codegen();
+	// temp->dump();
 	return temp;
 }
 
@@ -635,12 +663,16 @@ Value* assignment_stmt::Codegen()
 {
     Value *E = expr->Codegen();
 
-    string id = this->location->id;
-
+	string id = this->location->id;
 	Value *V_name = NamedValues[id];
 	if (V_name == 0)
-		Error("Unknown variable name");
-
+	{
+		// Not found in local vars
+		if(GlobalVars[id] == 0)
+			Error("Unknown variable name");
+		else
+			V_name = GlobalVars[id];
+	}
 	Value *V_value = Builder.CreateLoad(V_name, id);
 
 	int V_size = V_value->getType()->getIntegerBitWidth();
@@ -943,7 +975,7 @@ Value* for_stmt::Codegen()
 
     if(init_size != 32 || term_size != 32)
     {
-        Error("Expressions do not evaluate to int");
+        Error("For expressions do not evaluate to int");
     }
 
 
@@ -977,10 +1009,17 @@ Value* for_stmt::Codegen()
      // Store the value into the alloca.
     Builder.CreateStore(init, Alloca);
 
+    BasicBlock* current_block = Builder.GetInsertBlock();
+
     BasicBlock *LoopBB = BasicBlock::Create(getGlobalContext(), "loop", TheFunction);
 
+    // Create the "after loop" block and insert it.
+    BasicBlock *AfterBB = BasicBlock::Create(getGlobalContext(), "afterloop", TheFunction);
+
+    Value *init_Val = Builder.CreateLoad(Alloca, id.c_str());
+    Value *EndCond = Builder.CreateICmp(CmpInst::ICMP_SLT, init_Val, term, "lesstmp");
     // Insert an explicit fall through from the current block to the LoopBB.
-    Builder.CreateBr(LoopBB);
+    Builder.CreateCondBr(EndCond, LoopBB, AfterBB);
 
     // Start insertion in LoopBB.
     Builder.SetInsertPoint(LoopBB);
@@ -1002,16 +1041,13 @@ Value* for_stmt::Codegen()
     Builder.CreateStore(NextVar, Alloca);
 
 
-    Value *EndCond = Builder.CreateICmp(CmpInst::ICMP_SLT, NextVar, term, "lesstmp");
+    EndCond = Builder.CreateICmp(CmpInst::ICMP_SLT, NextVar, term, "lesstmp");
 
     if(debug)
     {
         cout << "dumping value of EndCond" << endl;
         EndCond->dump();
     }
-
-    // Create the "after loop" block and insert it.
-    BasicBlock *AfterBB = BasicBlock::Create(getGlobalContext(), "afterloop", TheFunction);
 
     Builder.CreateCondBr(EndCond, LoopBB, AfterBB);
 
@@ -1023,10 +1059,8 @@ Value* for_stmt::Codegen()
     else
         NamedValues.erase(id);
 
-
-    // for expr always returns 0.0
+    // for expr always returns 0
     return Constant::getNullValue(Type::getInt32Ty(getGlobalContext()));
-
 }
 
 return_stmt::return_stmt()
@@ -1051,7 +1085,7 @@ Value* return_stmt::Codegen()
 		Error("Returning nothing from a non-void function");
 
 	ReturnInst* retInst = ReturnInst::Create(getGlobalContext(), current_block);
-    return NULL;
+    return Constant::getNullValue(Type::getInt32Ty(getGlobalContext()));
 }
 
 return_expr_stmt::return_expr_stmt(expr_node *expr){
@@ -1097,6 +1131,15 @@ void break_stmt::evaluate()
 }
 Value* break_stmt::Codegen()
 {
+	cout << "Break Statement " << endl;
+
+	Function *F = Builder.GetInsertBlock()->getParent();
+	iplist<BasicBlock>::iterator iter;
+	for (iter = F->getBasicBlockList().begin(); iter != F->getBasicBlockList().end(); iter++)
+    {
+      BasicBlock* currBB = iter;
+      // cout << "BasicBlock: "  << currBB->getName() << "\n";   
+    }
     return NULL;
 }
 
@@ -1223,7 +1266,8 @@ Value* method_call_by_id::Codegen()
         if (temp == 0)
             return 0;
     }
-    temp = Builder.CreateCall(CalleeF, ArgsV, "calltmp");
+    // Removed name from here because http://comments.gmane.org/gmane.comp.compilers.llvm.devel/31465
+    temp = Builder.CreateCall(CalleeF, ArgsV);
     if(debug)
         temp->dump();
     return temp;
@@ -1425,6 +1469,36 @@ void field_decl_id_simple::evaluate()
 	level--;
 }
 
+Value* field_decl_id_simple::Codegen(string type)
+{
+	if(GlobalVars[id] != 0)
+	{
+		Error("Redeclaration of global variable");
+	}
+	Type *T;
+	ConstantInt *C;
+	if(type == "int")
+    {
+    	T = IntegerType::get(getGlobalContext(), 32);
+    	C = ConstantInt::get(getGlobalContext(), APInt(32, 0));
+    }
+    if(type == "boolean")
+    {
+    	T = IntegerType::get(getGlobalContext(), 1);
+    	C = ConstantInt::get(getGlobalContext(), APInt(1, 0));
+    }
+
+
+    GlobalVariable* GV = new GlobalVariable(*TheModule, T, false, GlobalValue::ExternalLinkage, 0, id);
+    GV->setInitializer(C);
+    if(debug)
+	{
+	    GV->dump();
+	}
+    GlobalVars[id] = GV;
+    
+}
+
 field_decl_id_array::field_decl_id_array(string id, int int_literal)
 {
 	this->id = id;
@@ -1438,6 +1512,38 @@ void field_decl_id_array::evaluate()
 	level++;
 	cout << "field_decl_id_array " << id << "[" << int_literal << "]" <<endl;
 	level--;
+}
+
+Value* field_decl_id_array::Codegen(string type)
+{
+	if(GlobalVars[id] != 0)
+	{
+		Error("Redeclaration of global variable");
+	}
+	Type *T;
+	ArrayType *AT;
+	if(type == "int")
+    {
+    	T = IntegerType::get(getGlobalContext(), 32);
+    	AT = ArrayType::get(T, int_literal);
+    	
+    }
+    if(type == "boolean")
+    {
+    	T = IntegerType::get(getGlobalContext(), 1);
+    	AT = ArrayType::get(T, int_literal);
+    }
+
+
+    GlobalVariable* GV = new GlobalVariable(*TheModule, AT, false, GlobalValue::ExternalLinkage, 0, id);
+    ConstantAggregateZero* C = ConstantAggregateZero::get(AT);
+    GV->setInitializer(C);
+    if(debug)
+	{
+	    GV->dump();
+	}
+    GlobalVars[id] = GV;
+
 }
 
 field_decl_node::field_decl_node(string type, list<field_decl_id_node*> *field_decl_id_list)
@@ -1455,6 +1561,15 @@ void field_decl_node::evaluate()
 		(*it)->evaluate();
 
 	level--;
+}
+
+Value* field_decl_node::Codegen()
+{
+	list<field_decl_id_node*>::iterator it;
+	for(it = field_decl_id_list->begin(); it!=field_decl_id_list->end(); ++it)
+	{
+		(*it)->Codegen(type);
+	}
 }
 
 method_decl_node::method_decl_node(string type, string id, list<argument_node*> *arg_list, block_node* block)
@@ -1598,6 +1713,9 @@ void program::evaluate(){
 }
 void program::Codegen()
 {
+	for(list<field_decl_node*>::iterator it = field_decl_list->begin(); it!=field_decl_list->end(); ++it)
+		(*it)->Codegen();
+
     for (list<method_decl_node*>::iterator it=method_decl_list->begin(); it!=method_decl_list->end(); ++it)
         (*it)->Codegen();
 
