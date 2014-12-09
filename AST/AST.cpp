@@ -172,7 +172,7 @@ Value* array_loc::Codegen()
 	temp = Builder.CreateInBoundsGEP(GlobalVars[id], tmp_args, "gep");
 
 	// Load the value.
-	temp = Builder.CreateLoad(temp, id);
+	// temp = Builder.CreateLoad(temp, id);
 
 	return temp;
 }
@@ -192,7 +192,6 @@ void memory_loc::evaluate()
 }
 Value* memory_loc::Codegen()
 {
-	cout << "In memory loc codegen" << endl;
 	Value *V = NamedValues[id];
 	if (V == 0)
 	{
@@ -208,11 +207,12 @@ Value* memory_loc::Codegen()
 	}
 
 	// Load the value.
-	Value *temp = Builder.CreateLoad(V, id);
+	// Value *temp = Builder.CreateLoad(V, id);
 
-	if(debug)
-		temp->dump();
-	return temp;
+	// if(debug)
+		// temp->dump();
+	// return temp;
+	return V;
 }
 /**************************************************************/
 
@@ -366,8 +366,9 @@ void location_expr_node::evaluate()
 Value* location_expr_node::Codegen(){
 
 	Value *temp = location->Codegen();
+	Value *temp2 = Builder.CreateLoad(temp, location->id);
 	// temp->dump();
-	return temp;
+	return temp2;
 }
 
 product_node::product_node(expr_node *left, expr_node *right): operator_node(left, right){
@@ -663,17 +664,9 @@ Value* assignment_stmt::Codegen()
 {
     Value *E = expr->Codegen();
 
-	string id = this->location->id;
-	Value *V_name = NamedValues[id];
-	if (V_name == 0)
-	{
-		// Not found in local vars
-		if(GlobalVars[id] == 0)
-			Error("Unknown variable name");
-		else
-			V_name = GlobalVars[id];
-	}
-	Value *V_value = Builder.CreateLoad(V_name, id);
+	Value *V_name = location->Codegen();
+
+	Value *V_value = Builder.CreateLoad(V_name, location->id);
 
 	int V_size = V_value->getType()->getIntegerBitWidth();
 	int E_size = E->getType()->getIntegerBitWidth();

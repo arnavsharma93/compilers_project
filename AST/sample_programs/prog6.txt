@@ -1,14 +1,26 @@
 class Program{
     int abc[10];
+
+    void print_val(int a)
+    {
+        callout("printf", "%d ", a);
+        callout("puts", "");
+        return;
+    }
     
     int main(){
-        int a;
-        //abc = 10;
-        //callout("printf", "Global Var %d", abc);
+        int a, i;
 
-        a = 20;
-        
-        callout("puts", "Array Var %d", abc[1]);    
+        for i=0, 10
+        {
+            abc[i] = i;
+        }
+        for i=0, 10
+        {
+            callout("printf", "%d ", abc[i]);
+            print_val(abc[i]);
+        }
+        callout("puts", "");
         return 0;
     }
 
