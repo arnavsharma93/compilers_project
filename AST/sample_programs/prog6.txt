@@ -2,16 +2,12 @@ class Program{
 
 
 
-	void main(){
+	int main(){
         int a;
         a = 1;
         if(5 > 6)
         {
             a = a + 1;
-        }
-        else
-        {
-            a = a - 1;
         }
         callout("printf", "Hello %d asd", a);
     }

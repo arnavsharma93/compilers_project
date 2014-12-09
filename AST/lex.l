@@ -32,6 +32,7 @@ char [^(\\)(\")(\')]|(\\)(\')|(\\)(\")|(\\)(\\)|\\[nt]
 "if"        {return IF;}
 "else"      {return ELSE;}
 "for"       {return FOR;}
+"while"       {return WHILE;}
 "return"    {return RETURN;}
 "break"     {return BREAK;}
 "continue"  {return CONTINUE;}

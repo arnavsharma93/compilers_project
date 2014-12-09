@@ -279,7 +279,7 @@ class assignment_stmt : public statement_node{
 
 class if_stmt : public statement_node{
 	protected:
-		block_node *block;
+		block_node *then_block;
 		expr_node *expr;
 	public:
 		if_stmt(expr_node *expr, block_node *block);
@@ -295,6 +295,29 @@ class if_else_stmt : public statement_node{
 		if_else_stmt(expr_node *expr, block_node *then_block, block_node *else_block);
 		void evaluate();
 		virtual Value* Codegen();
+};
+
+class while_stmt : public statement_node{
+	protected:
+		expr_node *expr;
+		block_node *block;
+	public:
+		while_stmt(expr_node *expr, block_node *block);
+		void evaluate();
+		virtual Value* Codegen();
+
+};
+
+class while_bound_stmt : public statement_node{
+	protected:
+		expr_node *expr;
+		block_node *block;
+		int bound;
+	public:
+		while_bound_stmt(expr_node *expr, int bound, block_node *block);
+		void evaluate();
+		virtual Value* Codegen();
+
 };
 
 class for_stmt : public statement_node{

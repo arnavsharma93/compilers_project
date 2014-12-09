@@ -68,6 +68,7 @@
 %token ELSE
 %token <int_literal> INT_LITERAL
 %token FOR
+%token WHILE
 %token RETURN
 %token BREAK
 %token CONTINUE
@@ -202,12 +203,16 @@ statement_star: /* empty string */                              {$$ = new list<s
 statement: location assign_op expr ';'                          {$$ = new assignment_stmt($1, $2, $3);}
           /* DONE */
          | method_call ';'                                      {$$ = new method_call_stmt($1);}
-
+         // DONE
          | IF '(' expr ')' block                                {$$ = new if_stmt($3, $5);}
-
+         // DONE
          | IF '(' expr ')' block ELSE block                     {$$ = new if_else_stmt($3, $5, $7);}
 
          | FOR IDENTIFIER '=' expr ',' expr block               {$$ = new for_stmt($2, $4, $6, $7);}
+
+         | WHILE '(' expr ')' block                             {$$ = new while_stmt($3, $5);}
+
+         | WHILE '(' expr ')' ':' INT_LITERAL block             {$$ = new while_bound_stmt($3, $6, $7);}
 
          | RETURN ';'                                           {$$ = new return_stmt();}
 
