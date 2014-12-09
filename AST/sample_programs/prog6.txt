@@ -1,15 +1,16 @@
 class Program{
 
-	int a, aa, arr[100000], b, c[10], d, e[20];
-	void func1(){}
-	int func2(){}
-	boolean func3(){}
+
 
 	void func4(int a){
-        int b,c;
-        c = 10;
-        b = 5;
-        a -= b;
+        if(6 > 5)
+        {
+            a = a + 1;
+        }
+        else
+        {
+            a = a - 1;
+        }
     }
 
 }

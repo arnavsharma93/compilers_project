@@ -711,13 +711,24 @@ void if_stmt::evaluate()
 }
 Value* if_stmt::Codegen()
 {
-    return NULL;
+    Value* CondV = this->expr->Codegen();
+    if(CondV == 0)
+         return 0;
+
+    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(getGlobalContext(), APInt(1, 1, false)), "ifcond");
+
+    if(debug)
+    {
+        cout << "dumping condv" << endl;
+        CondV->dump();
+    }
+
 }
 
-if_else_stmt::if_else_stmt(expr_node *expr, block_node *if_block, block_node *else_block)
+if_else_stmt::if_else_stmt(expr_node *expr, block_node *then_block, block_node *else_block)
 {
 	this->expr = expr;
-	this->if_block = if_block;
+	this->then_block = then_block;
 	this->else_block = else_block;
 }
 
@@ -733,7 +744,7 @@ void if_else_stmt::evaluate()
 	expr->evaluate();
 	print_tabs(level-1);
 	cout << "IF Block" << endl;
-	if_block->evaluate();
+	then_block->evaluate();
 	print_tabs(level-1);
 	cout << "ELSE Block" << endl;
 	else_block->evaluate();
@@ -742,7 +753,64 @@ void if_else_stmt::evaluate()
 }
 Value* if_else_stmt::Codegen()
 {
-    return NULL;
+	 Value* CondV = this->expr->Codegen();
+	if(CondV == 0)
+	     return 0;
+
+	CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(getGlobalContext(), APInt(1, 1, false)), "ifcond");
+
+	// get the parent function of the current basic block: the function in which the current BB is embedded
+	Function *TheFunction = Builder.GetInsertBlock()->getParent();
+
+	// create BB for the Then block and insert it at the end of the current function
+	BasicBlock *ThenBB = BasicBlock::Create(getGlobalContext(), "then", TheFunction);
+
+	// BB for Else block
+	BasicBlock *ElseBB = BasicBlock::Create(getGlobalContext(), "else");
+	// BB for merge
+	BasicBlock *MergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
+
+	// Choose the BB based upon the value of CondV
+	Builder.CreateCondBr(CondV, ThenBB, ElseBB);
+
+
+	// Codegen of then block
+	// Emit Then Value - Starts inserting at the beginning of Then block
+	Builder.SetInsertPoint(ThenBB);
+
+	// block codegen not working
+	Value *ThenV = then_block->Codegen();
+	if (ThenV == 0) return 0;
+	// Unconditional merge back
+	Builder.CreateBr(MergeBB);
+	// Codegen of 'Then' can change the current block, update ThenBB for the PHI.
+	ThenBB = Builder.GetInsertBlock();
+
+
+	// Codegen of else block
+	TheFunction->getBasicBlockList().push_back(ElseBB);
+	Builder.SetInsertPoint(ElseBB);
+
+	// block codegen not working
+	Value *ElseV = else_block->Codegen();
+	if (ElseV == 0) return 0;
+	Builder.CreateBr(MergeBB);
+	// Codegen of 'Else' can change the current block, update ElseBB for the PHI.
+	ElseBB = Builder.GetInsertBlock();
+
+	// Emit merge block
+	TheFunction->getBasicBlockList().push_back(MergeBB);
+	Builder.SetInsertPoint(MergeBB);
+	PHINode *PN = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2,
+                                  "iftmp");
+
+	int pn_size = PN->getType()->getIntegerBitWidth();
+
+	printf("%d\n", pn_size);
+
+	// PN->addIncoming(ThenV, ThenBB);
+	// PN->addIncoming(ElseV, ElseBB);
+	return PN;
 }
 
 for_stmt::for_stmt(string id, expr_node *init_expr, expr_node *term_expr, block_node *block){

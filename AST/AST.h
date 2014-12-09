@@ -289,10 +289,10 @@ class if_stmt : public statement_node{
 
 class if_else_stmt : public statement_node{
 	protected:
-		block_node *if_block, *else_block;
+		block_node *then_block, *else_block;
 		expr_node *expr;
 	public:
-		if_else_stmt(expr_node *expr, block_node *if_block, block_node *else_block);
+		if_else_stmt(expr_node *expr, block_node *then_block, block_node *else_block);
 		void evaluate();
 		virtual Value* Codegen();
 };
