@@ -2,8 +2,10 @@ class Program{
 
 
 
-	void func4(int a){
-        if(6 > 5)
+	void main(){
+        int a;
+        a = 1;
+        if(5 > 6)
         {
             a = a + 1;
         }
@@ -11,6 +13,7 @@ class Program{
         {
             a = a - 1;
         }
+        callout("printf", "Hello %d asd", a);
     }
 
 }

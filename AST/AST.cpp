@@ -753,7 +753,7 @@ void if_else_stmt::evaluate()
 }
 Value* if_else_stmt::Codegen()
 {
-	 Value* CondV = this->expr->Codegen();
+	Value* CondV = this->expr->Codegen();
 	if(CondV == 0)
 	     return 0;
 
@@ -801,12 +801,9 @@ Value* if_else_stmt::Codegen()
 	// Emit merge block
 	TheFunction->getBasicBlockList().push_back(MergeBB);
 	Builder.SetInsertPoint(MergeBB);
-	PHINode *PN = Builder.CreatePHI(Type::getVoidTy(getGlobalContext()), 2,
+	PHINode *PN = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2,
                                   "iftmp");
 
-	// int pn_size = PN->getType()->getIntegerBitWidth();
-
-	// printf("%d\n", pn_size);
 
 	PN->addIncoming(ThenV, ThenBB);
 	PN->addIncoming(ElseV, ElseBB);
@@ -1156,9 +1153,10 @@ Value* block_node::Codegen()
     }
     cout << endl;
 
+    Value* temp;
     // Execute the statements.
     for(list<statement_node*>::iterator it = statement_list->begin(); it!=statement_list->end(); ++it)
-        (*it)->Codegen();
+        temp = (*it)->Codegen();
 
     // Pop all our variables from scope.
     int i=0;
@@ -1176,6 +1174,7 @@ Value* block_node::Codegen()
         }
     }
 
+    return temp;
 
 	// cout << "After Local Var ";
 	// for(map<string, AllocaInst*>::iterator it=NamedValues.begin(); it!=NamedValues.end(); ++it)
