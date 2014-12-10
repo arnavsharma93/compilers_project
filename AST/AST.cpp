@@ -786,7 +786,7 @@ Value* if_stmt::Codegen()
 	// Emit merge block
 	TheFunction->getBasicBlockList().push_back(MergeBB);
 	Builder.SetInsertPoint(MergeBB);
-	return Constant::getNullValue(Type::getInt32Ty(getGlobalContext()));	
+	return Constant::getNullValue(Type::getInt32Ty(getGlobalContext()));
 }
 
 if_else_stmt::if_else_stmt(expr_node *expr, block_node *then_block, block_node *else_block)
@@ -1123,7 +1123,7 @@ void break_stmt::evaluate()
 }
 Value* break_stmt::Codegen()
 {
-	cout << "Break Statement " << endl;
+	// cout << "Break Statement " << endl;
 
 	Value *temp = Builder.CreateBr(ForAfterBB);
     return temp;
@@ -1482,7 +1482,7 @@ Value* field_decl_id_simple::Codegen(string type)
 	    GV->dump();
 	}
     GlobalVars[id] = GV;
-    
+
 }
 
 field_decl_id_array::field_decl_id_array(string id, int int_literal)
@@ -1512,7 +1512,7 @@ Value* field_decl_id_array::Codegen(string type)
     {
     	T = IntegerType::get(getGlobalContext(), 32);
     	AT = ArrayType::get(T, int_literal);
-    	
+
     }
     if(type == "boolean")
     {

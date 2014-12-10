@@ -1,0 +1,94 @@
+class Program{
+	int a[100];
+	int c[100];
+
+	void merge(int low, int mid, int high)
+	{
+		int i, j, k, m;
+		i = low;
+		k = low;
+		j = mid + 1;
+
+		for m=low, high+1
+		{
+			if(i > mid)
+			{
+				break;
+			}
+			if(j > high)
+			{
+				break;
+			}
+			if(a[i] < a[j])
+			{
+				c[k] = a[i];
+				k += 1;
+				i += 1;
+			}
+			else
+			{
+				c[k] = a[j];
+				k += 1;
+				j += 1;
+			}
+		}
+		for m=i, mid+1
+		{
+			c[k] = a[m];
+			k += 1;
+		}
+		for m=j, high+1
+		{
+			c[k] = a[m];
+			k += 1;
+		}
+		for m=low, k
+		{
+			a[m] = c[m];
+		}
+		return;
+	}
+
+	void mergesort(int low, int high)
+	{
+		int mid;
+		{
+			if(low < high)
+			{
+				mid = (low+high)/2;
+				mergesort(low, mid);
+				mergesort(mid+1, high);
+				merge(low, mid, high);
+			}
+			return;
+		}
+	}
+	int main()
+	{
+		int i, j, temp, N;
+
+		N =100;
+		for i=0, N
+		{
+			a[i] = (callout("rand") %1000);
+		}
+
+		callout("puts", "Original array");
+		for i=0, N
+		{
+			callout("printf", "%d ", a[i]);
+		}
+		callout("puts", "");
+
+		mergesort(0, N-1);
+
+		callout("puts", "Sorted array");
+		for i=0, N
+		{
+			callout("printf", "%d ", a[i]);
+		}
+		callout("puts", "");
+		return 0;
+	}
+
+}
