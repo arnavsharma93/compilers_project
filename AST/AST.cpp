@@ -22,6 +22,9 @@ static map<string, GlobalVariable*> GlobalVars;
 extern Module *TheModule;
 
 BasicBlock *ForAfterBB;
+BasicBlock *ForLoopBB;
+string global_id;
+Value* global_term;
 
 Value *ErrorV(const char *Str) { printf("Error : %s\n", Str );; exit(0); }
 void *Error(const char *Str) { printf("Error : %s\n", Str );; exit(0); }
@@ -969,7 +972,8 @@ Value* for_stmt::Codegen()
         Error("For expressions do not evaluate to int");
     }
 
-
+    global_id = id;
+    global_term = term;
     // Make the new basic block for the loop header, inserting after current
     // block.
     Function *TheFunction = Builder.GetInsertBlock()->getParent();
@@ -1003,6 +1007,7 @@ Value* for_stmt::Codegen()
     BasicBlock* current_block = Builder.GetInsertBlock();
 
     BasicBlock *LoopBB = BasicBlock::Create(getGlobalContext(), "loop", TheFunction);
+    ForLoopBB = LoopBB;
 
     // Create the "after loop" block and insert it.
     BasicBlock *AfterBB = BasicBlock::Create(getGlobalContext(), "afterloop", TheFunction);
@@ -1144,7 +1149,19 @@ void continue_stmt::evaluate()
 }
 Value* continue_stmt::Codegen()
 {
-    return NULL;
+	AllocaInst* Alloca = NamedValues[global_id];
+    Value* CurVar = Builder.CreateLoad(Alloca, global_id.c_str());
+
+    Value *StepVal = ConstantInt::get(getGlobalContext(), APInt(32, 1));
+    Value *NextVar = Builder.CreateAdd(CurVar, StepVal, "nextvar");
+
+    Builder.CreateStore(NextVar, Alloca);
+
+    Value *EndCond = Builder.CreateICmp(CmpInst::ICMP_SLT, NextVar, global_term, "lesstmp");
+    // Insert an explicit fall through from the current block to the LoopBB.
+    Builder.CreateCondBr(EndCond, ForLoopBB, ForAfterBB);
+    return Constant::getNullValue(Type::getInt32Ty(getGlobalContext()));
+
 }
 
 block_stmt::block_stmt(block_node *block)
