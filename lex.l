@@ -1,13 +1,14 @@
 %{
-#define YYSTYPE float
-#include "grammar.tab.h"
+#include "AST.h"
+#include "y.tab.h"
 
 #include <stdio.h>
-#include <math.h>
-
-void yyerror (char const *s) {
-    printf ("Error : %s\n", s);
-}
+#include "llvm/IR/Verifier.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+extern int line_num;
 
 %}
 digit	[0-9]
@@ -27,16 +28,18 @@ char [^(\\)(\")(\')]|(\\)(\')|(\\)(\")|(\\)(\\)|\\[nt]
 \/\/.*$  {}
 "class"     {return CLASS;}
 "Program"   {return PROGRAM;}
-"void"      {return VOID;}
+"void"      {yylval.type = strdup(yytext);return VOID;}
 "if"        {return IF;}
 "else"      {return ELSE;}
 "for"       {return FOR;}
+"while"       {return WHILE;}
 "return"    {return RETURN;}
 "break"     {return BREAK;}
 "continue"  {return CONTINUE;}
 "callout"   {return CALLOUT;}
-"int"|"boolean" {return TYPE;}
-"true"|"false"  {return BOOL_LITERAL;}
+"int"|"boolean" {yylval.type = strdup(yytext);return TYPE;}
+"true"		{yylval.bool_literal = true;return BOOL_LITERAL;}
+"false"  	{yylval.bool_literal = false;return BOOL_LITERAL;}
 "+="        {return PLUSEQUAL;}
 "-="        {return MINUSEQUAL;}
 "<="        {return LESSEQUAL;}
@@ -45,19 +48,25 @@ char [^(\\)(\")(\')]|(\\)(\')|(\\)(\")|(\\)(\\)|\\[nt]
 "!="        {return NOTEQUAL;}
 "&&"        {return COND_AND;}
 "||"        {return COND_OR;}
-{alpha}{alpha_num}*  {return ID;}
-{int_literal} {return INT_LITERAL;}
-{char_literal} {return CHAR_LITERAL;}
-{string_literal} {return STRING_LITERAL;}
+{alpha}{alpha_num}*  {yylval.id = strdup(yytext);return IDENTIFIER;}
+{hex_literal}	{
+					yylval.int_literal = (int)strtol(yytext, NULL, 16);
+					return INT_LITERAL;
+				}
+{decimal_literal} 	{
+						yylval.int_literal = (int)strtol(yytext, NULL, 10);
+						return INT_LITERAL;
+					}
+{char_literal}  {
+					yylval.char_literal = strdup(yytext);
+					return CHAR_LITERAL;
+				}
+{string_literal} {
+					yylval.string_literal = strdup(yytext);
+					return STRING_LITERAL;
+				 }
 
 {delim}+    {}
 . { return *yytext; }
 
 %%
-
-
-int
-main (void)
-{
-    printf("Return Code %d\n", yyparse());
-}

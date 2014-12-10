@@ -1,0 +1,22 @@
+Compilers Course Project -
+	Somay Jain (201101054)
+	Arnav Sharma (201125093)
+
+Description : 
+	A parser and AST representation for the decaf programming language with the following specifications - http://192.168.36.187/mediawiki/images/c/c2/Decafspec.pdf
+	Made using flex and bison.
+
+Compiling Instructions : 
+    To make and compile
+	./make_and_compile.sh <name of the prog>
+    
+    To compile
+	./compile.sh <name of the prog>
+    Note : Some UNIX systems might require -lfl instead of -ll in the last command, so you might have to edit the makefile.
+
+Sample input programs are present in the sample_programs 
+
+Input program is compiled and the three address IR is stored in a file .temp.llvm.out
+
+References - 
+http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/6/

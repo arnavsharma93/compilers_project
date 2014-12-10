@@ -1,8 +1,0 @@
-class Program{
-	
-	int a, aa, arr[100000], b, c[10], d, e[20];
-	void func1(){}
-	int func2(){}
-	boolean func3(){}
-	void func4(){}
-}
